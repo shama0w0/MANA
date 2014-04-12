@@ -1,0 +1,52 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+// Incluye el mecanismo de manejo de errores de SQL
+EXEC SQL INCLUDE sqlca;
+
+
+// Declaracion de variables a usar en SQL
+EXEC SQL BEGIN DECLARE SECTION;
+
+   VARCHAR SQL_dbname[9];
+   VARCHAR SQL_user[7];
+   VARCHAR SQL_password[20];
+
+   VARCHAR SQL_nombre[31];
+   VARCHAR SQL_rut[11];
+   VARCHAR SQL_fecha_n[31];
+   VARCHAR SQL_sueldo[16];
+   VARCHAR SQL_cargo[31];
+   VARCHAR SQL_telefono[16];
+   VARCHAR SQL_direccion[61];
+   VARCHAR SQL_correo[61];
+   VARCHAR SQL_estado[16];
+
+   int SQL_count;
+
+   EXEC SQL END DECLARE SECTION;
+
+// Metodo para conectarse a la BdD
+int SQLConectar() {
+
+	strcpy(SQL_dbname.arr, "get");	
+	SQL_dbname.len = strlen(SQL_dbname.arr);
+	strcpy(SQL_user.arr, "sgonzalez");
+	SQL_user.len = strlen(SQL_user.arr);	
+	strcpy(SQL_password.arr, "dstdst");
+	SQL_password.len = strlen(SQL_password.arr);
+
+	EXEC SQL CONNECT TO :SQL_dbname USER :SQL_user IDENTIFIED BY :SQL_password;
+
+  	if(sqlca.sqlcode != 0) {
+    		printf("Error en la conexion con la base de datos\n\n");
+    		return(0);
+	} else {
+    		printf("Conexion con base de datos realizada\n\n");
+    		return(1);

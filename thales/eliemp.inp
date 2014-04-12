@@ -1,0 +1,19 @@
+ID eliemp 580013 040 060
+
+box 00 00 23 79
+
+cf 01 20 21 Eliminar Usuario
+cf 02 20 21 ++++++++++++++++
+
+cf 04 20 28 Ingrese Rut del Usuario:
+cd 04 50 10 000 042
+
+
+
+cm 10 25 02 000
+tm 01 20 Empleado eliminado
+tm 02 20 Ingrese rut
+tm 03 20 Rut no encontrado
+
+fs 19 68
+ff

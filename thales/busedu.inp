@@ -1,0 +1,27 @@
+ID busedu 580035 300 200
+
+box 01 01 30 90
+
+cf 02 40 30 Busqueda Educacion Empleado
+cf 03 40 20 ----------------
+
+cf 05 03 03 Rut Empleado
+ce 05 06 10 00 AN 0
+
+cf 09 03 20 Nivel escolaridad
+cs 09 25 15 03 AN 0
+
+cf 11 03 20 Centro educativo
+cs 11 25 60 19 AN 0
+
+cf 13 03 20 Nombre titulo
+cs 13 25 60 80 AN 0
+
+
+tm 01 20 Empleado encontrado
+tm 02 20 Debe ingrear un rut
+tm 03 20 Rut no encontrado
+cm 25 25 02 00
+
+fs 26 75
+ff

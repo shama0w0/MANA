@@ -1,0 +1,1690 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+// Incluye el mecanismo de manejo de errores de SQL
+EXEC SQL INCLUDE sqlca;
+
+
+// Declaracion de variables a usar en SQL
+EXEC SQL BEGIN DECLARE SECTION;
+
+   VARCHAR SQL_dbname[9];
+   VARCHAR SQL_user[7];
+   VARCHAR SQL_password[20];
+   VARCHAR SQL_clave[11];
+
+   VARCHAR SQL_nombre[31];
+   VARCHAR SQL_rut[11];
+   VARCHAR SQL_fecha_n[31];
+   VARCHAR SQL_sueldo[16];
+   VARCHAR SQL_cargo[31];
+   VARCHAR SQL_telefono[16];
+   VARCHAR SQL_direccion[61];
+   VARCHAR SQL_correo[61];
+   VARCHAR SQL_estado[16];
+   
+   VARCHAR SQL_nivel[16];
+   VARCHAR SQL_centro[61];
+   VARCHAR SQL_titulo[61];
+
+   int SQL_count;
+   VARCHAR SQL_r1[11];
+   VARCHAR SQL_r2[11];
+   VARCHAR SQL_r3[11];
+   VARCHAR SQL_r4[11];
+   VARCHAR SQL_r5[11];
+   VARCHAR SQL_r6[11];
+   VARCHAR SQL_c1[31];
+   VARCHAR SQL_c2[31];
+   VARCHAR SQL_c3[31];
+   VARCHAR SQL_c4[31];
+   VARCHAR SQL_c5[31];
+   VARCHAR SQL_c6[31];
+   VARCHAR SQL_nombre1[31];
+   VARCHAR SQL_nombre2[31];
+   VARCHAR SQL_nombre3[31];
+   VARCHAR SQL_nombre4[31];
+   VARCHAR SQL_nombre5[31];
+   VARCHAR SQL_nombre6[31];
+   int SQL_codigo;
+   int SQL_cod;
+   
+   VARCHAR SQL_nombrelog[16];
+   VARCHAR SQL_passlog[11];
+   
+   VARCHAR SQL_nombrecargo[61];
+   VARCHAR SQL_descripcion[1001];
+   
+   
+   VARCHAR SQL_dc1[1001];
+   VARCHAR SQL_dc2[1001];
+   VARCHAR SQL_dc3[1001];
+   VARCHAR SQL_dc4[1001];
+   VARCHAR SQL_dc5[1001];
+   VARCHAR SQL_dc6[1001];
+   VARCHAR SQL_nombrec1[61];
+   VARCHAR SQL_nombrec2[61];
+   VARCHAR SQL_nombrec3[61];
+   VARCHAR SQL_nombrec4[61];
+   VARCHAR SQL_nombrec5[61];
+   VARCHAR SQL_nombrec6[61];
+   
+   VARCHAR SQL_cargos[1001];
+   
+   VARCHAR SQL_nombref[61];
+   VARCHAR SQL_rutf[11];
+   VARCHAR SQL_sueldof[16];
+   VARCHAR SQL_estadof[3];
+   
+   VARCHAR SQL_rutfondos[11];
+   
+   int SQL_capital;
+   int SQL_sueldocap;
+   
+   int SQL_num1;
+   
+   EXEC SQL END DECLARE SECTION;
+ 
+// Metodo para conectarse a la BdD
+int SQLConectar() {
+
+	strcpy(SQL_dbname.arr, "get");	
+	SQL_dbname.len = strlen(SQL_dbname.arr);
+	strcpy(SQL_user.arr, "sgonzalez");
+	SQL_user.len = strlen(SQL_user.arr);	
+	strcpy(SQL_password.arr, "dstdst");
+	SQL_password.len = strlen(SQL_password.arr);
+
+	EXEC SQL CONNECT TO :SQL_dbname USER :SQL_user IDENTIFIED BY :SQL_password;
+
+  	if(sqlca.sqlcode != 0) {
+    		printf("Error en la conexion con la base de datos\n\n");
+    		return(0);
+	} else {
+    		printf("Conexion con base de datos realizada\n\n");
+    		return(1);
+	}
+}// Fin SQLConectar()
+
+
+int main() {
+
+	printf("\n\n ++++++++++   Demonio en ejecucion   ++++++++++\n\n\n");
+	printf("Conexion BdD:\n");
+	
+	SQLConectar();
+	
+	// Se definen variables y estructuras necesarias para la comunicacion entre el demonio y los .c
+
+	int qid, pid , len;
+
+	struct msgbuf
+	{
+		long mtype;
+		struct
+		{
+			int pid;
+			char datos[2000];
+		} texto;
+	} mensaje, respuesta;
+
+	qid = msgget (589000, IPC_CREAT|0666);
+	pid = getpid ();
+
+	while(1){
+
+		//limpiamos la estructura de mensaje
+		memset(&mensaje, 0, sizeof mensaje);
+			
+		//Limpiamos la estructura de respuesta
+		memset (&respuesta, 0, sizeof respuesta);
+		
+		if((len = msgrcv (qid, &mensaje, 2500, 1, 0)) > 0) {
+
+		  	memset (&respuesta, 0, sizeof respuesta);
+		  	printf("Recibido: (%d) <%d/%s>\n\n", mensaje.mtype, mensaje.texto.pid, mensaje.texto.datos);
+		  	int pid_destino = mensaje.texto.pid;
+ 
+			// Fomulario del que viene
+
+			char formulario[7];
+			memset (formulario, 0, sizeof formulario);
+			sscanf(mensaje.texto.datos, "%6c", formulario);
+			printf("El formulario es: [%s]\n\n", formulario);
+
+
+		/*************************************************************************
+			Formulario Ingreso
+		*************************************************************************/
+
+			if (strcmp(formulario, "regemp")==0){
+	
+				printf("   --------------------   \n   El proceso Es: Formulario Ingreso\n   --------------------\n\n");
+ 				char nombre1[31];
+ 				char rut1[11];
+ 				char fecha_n1[31];
+ 				char sueldo1[16];
+ 				char cargo1[31];
+ 				char telefono1[16];
+ 				char direccion1[61];
+ 				char correo1[61];
+ 				char estado1[16];
+ 
+				//Limpiamos los Strings
+
+				memset (nombre1, 0, sizeof nombre1);
+				memset (rut1, 0, sizeof rut1);
+				memset (fecha_n1, 0, sizeof fecha_n1);
+				memset (sueldo1, 0, sizeof sueldo1);
+				memset (cargo1, 0, sizeof cargo1);
+				memset (telefono1, 0, sizeof telefono1);
+				memset (direccion1, 0, sizeof direccion1);
+				memset (correo1, 0, sizeof correo1);
+				memset (estado1, 0, sizeof estado1);
+
+				//Recibimos los datos desde el .c
+	
+				sscanf(mensaje.texto.datos, "%6c%30c%10c%30c%15c%30c%15c%60c%60c%15c", 
+formulario, nombre1, rut1, fecha_n1, sueldo1, cargo1, telefono1, direccion1, correo1, estado1);
+
+				//Guardamos la variable en la estructura arr de rut	
+
+				sprintf(SQL_nombre.arr,"%s", nombre1);
+				SQL_nombre.len=strlen(SQL_nombre.arr);
+
+
+				sprintf(SQL_rut.arr,"%s", rut1);
+				SQL_rut.len=strlen(SQL_rut.arr);
+
+
+				sprintf(SQL_fecha_n.arr,"%s", fecha_n1);
+				SQL_fecha_n.len=strlen(SQL_fecha_n.arr);
+
+
+				sprintf(SQL_sueldo.arr,"%s", sueldo1);
+				SQL_sueldo.len=strlen(SQL_sueldo.arr);
+
+				sprintf(SQL_cargo.arr,"%s", cargo1);
+				SQL_cargo.len=strlen(SQL_cargo.arr);
+
+				sprintf(SQL_telefono.arr,"%s", telefono1);
+				SQL_telefono.len=strlen(SQL_telefono.arr);
+
+
+				sprintf(SQL_direccion.arr,"%s", direccion1);
+				SQL_direccion.len=strlen(SQL_direccion.arr);
+
+
+				sprintf(SQL_correo.arr,"%s", correo1);
+				SQL_correo.len=strlen(SQL_correo.arr);
+
+
+				sprintf(SQL_estado.arr,"%s", estado1);
+				SQL_estado.len=strlen(SQL_estado.arr);
+
+				if(strcmp(SQL_nombre.arr,"") == 0||strcmp(SQL_rut.arr,"") == 0 || strcmp(SQL_fecha_n.arr,"") ==0 || strcmp(SQL_sueldo.arr,"")==0 || strcmp(SQL_cargo.arr,"")==0 || strcmp(SQL_telefono.arr,"")==0 || strcmp(SQL_direccion.arr,"")==0 || strcmp(SQL_correo.arr,"")==0 || strcmp(SQL_estado.arr,"")==0){
+                                       
+                                        memset( &respuesta, 0, sizeof respuesta);
+                                        sprintf(respuesta.texto.datos, "%s", "04");
+                                        respuesta.mtype = pid_destino;
+                                        respuesta.texto.pid = pid;
+                                        msgsnd(qid, &respuesta, strlen(respuesta.texto.datos)+4,0);
+					printf("Faltan campos que rellenar\n");
+
+
+				}
+				else{
+
+
+				printf("El nombre es: %s\n", SQL_nombre.arr);
+				printf("El rut es: %s\n", SQL_rut.arr);
+				printf("El fecha_nacimiento es: %s\n", SQL_fecha_n.arr);
+				printf("El sueldo es: %s\n", SQL_sueldo.arr);
+				printf("El cargo es: %s\n", SQL_cargo.arr);
+				printf("El telefono es: %s\n", SQL_telefono.arr);
+				printf("El direccion es: %s\n", SQL_direccion.arr);
+				printf("El correo es: %s\n", SQL_correo.arr);
+				printf("El estado es: %s\n", SQL_estado.arr);
+
+				// Verificamos si el empleado ya esta registrado
+				EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM empleados WHERE RUT=:SQL_rut;
+
+				if( SQL_count != 0) {
+					
+					printf("El empleado ya fue registrado\n");
+					
+					memset( &respuesta, 0, sizeof respuesta);
+					sprintf(respuesta.texto.datos, "%s", "03");
+					respuesta.mtype = pid_destino;
+					respuesta.texto.pid = pid;
+					msgsnd(qid, &respuesta, strlen(respuesta.texto.datos)+4,0);
+
+				} else {
+
+
+					// Insertamos el empleado en la BdD
+					EXEC SQL INSERT INTO empleados (nombre, rut, fecha_n, sueldo, cargo, telefono, direccion, correo, estado) VALUES (:SQL_nombre, :SQL_rut, :SQL_fecha_n, :SQL_sueldo, :SQL_cargo, :SQL_telefono, :SQL_direccion, :SQL_correo, :SQL_estado);
+					EXEC SQL COMMIT;
+
+					// Revisar en caso de error en la consulta
+					if(sqlca.sqlcode != 0) {
+						
+						printf("\nERROR en la consulta SQL\n\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					} else {			
+
+						printf("\nEmpleado ingresado con exito\n\n");	
+                            	
+						memset(&respuesta,0,sizeof respuesta);
+	                        		sprintf(respuesta.texto.datos, "%s", "01");
+       	                        		respuesta.mtype=pid_destino;
+                               	 		respuesta.texto.pid=pid;
+                                		msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+
+				} // Fin else
+				}// Fin else condiciones
+
+			}//Fin Formulario ingtra
+
+			if(strcmp(formulario,"eliemp")==0)
+			{
+				
+			printf("   --------------------   \n   El proceso es: Formulario de Eliminacion\n   -------------------\n\n");
+			char rut1[11];
+
+			memset(rut1, 0, sizeof rut1);
+
+			sscanf(mensaje.texto.datos, "%6c%10c", formulario,rut1);
+
+			sprintf(SQL_rut.arr, "%s", rut1);
+			SQL_rut.len=strlen(SQL_rut.arr);
+
+			if(strcmp(SQL_rut.arr,"          ")==0)
+			{
+				memset(&respuesta,0,sizeof respuesta);
+				sprintf(respuesta.texto.datos, "%s", "02");
+				respuesta.mtype=pid_destino;
+				respuesta.texto.pid=pid;
+				msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				printf("No se ingreso Rut\n");
+
+			}else
+			{
+				printf("El rut es: %s\n", SQL_rut.arr);
+				EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM empleados WHERE RUT=:SQL_rut;
+				if(SQL_count==0)
+				{ 
+					printf("El rut no existe en la base de datos\n");
+					memset(&respuesta,0,sizeof respuesta);
+					sprintf(respuesta.texto.datos, "%s", "03");
+					respuesta.mtype=pid_destino;
+					respuesta.texto.pid=pid;
+					msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				}else
+				{ 	
+
+                                	EXEC SQL DELETE FROM empleados WHERE rut=:SQL_rut;
+                                	EXEC SQL COMMIT;
+					
+					if(sqlca.sqlcode !=0)
+					{
+						printf("ERROR en la consulta SQL\n");
+						
+						memset(&respuesta,0,sizeof respuesta);
+						sprintf(respuesta.texto.datos, "%s", "03");
+						respuesta.mtype=pid_destino;
+						respuesta.texto.pid=pid;
+						msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+					}else
+					{
+						printf("Empleado borrado con exito\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+						sprintf(respuesta.texto.datos, "%s", "01");
+						respuesta.mtype=pid_destino;
+						respuesta.texto.pid=pid;
+						msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+				}
+			}
+						
+			}//fin eliminacion empleado
+
+			 if(strcmp(formulario,"busemp")==0)
+                        {
+
+                        printf("   --------------------   \n   El proceso es: Formulario de Busqueda\n   -------------------\n\n");
+                        char rut1[11];
+			   char nombre1[31];
+
+                        memset(rut1, 0, sizeof rut1);
+
+                        sscanf(mensaje.texto.datos, "%6c%10c", formulario,rut1);
+
+                        sprintf(SQL_rut.arr, "%s", rut1);
+                        SQL_rut.len=strlen(SQL_rut.arr);
+
+                        if(strcmp(SQL_rut.arr,"          ")==0)
+                        {
+                                memset(&respuesta,0,sizeof respuesta);
+                                sprintf(respuesta.texto.datos, "%s", "02");
+                                respuesta.mtype=pid_destino;
+                                respuesta.texto.pid=pid;
+                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                printf("No se ingreso Rut\n");
+
+                        }else
+                        {
+                                printf("El rut es: %s\n", SQL_rut.arr);
+                                EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM empleados WHERE RUT=:SQL_rut;
+                                if(SQL_count==0)
+                                {
+                                        printf("El rut no existe en la base de datos\n");
+                                        memset(&respuesta,0,sizeof respuesta);
+                                        sprintf(respuesta.texto.datos, "%s", "03");
+                                        respuesta.mtype=pid_destino;
+                                        respuesta.texto.pid=pid;
+                                        msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                }else
+					{       
+
+					EXEC SQL SELECT nombre,fecha_n,sueldo,cargo,telefono,direccion,correo,estado INTO :SQL_nombre, :SQL_fecha_n, :SQL_sueldo, :SQL_cargo, :SQL_telefono, :SQL_direccion, :SQL_correo, :SQL_estado FROM empleados WHERE rut=:SQL_rut;
+					EXEC SQL COMMIT;
+    
+                                        if(sqlca.sqlcode !=0)
+                                        {
+                                                printf("ERROR en la consulta SQL\n");
+						
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "03");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }else
+                                        {
+                                                printf("Empleado encontrado con exito\n");
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%2s %30s %30s %15s %30s %15s %60s %60s %15s","01",SQL_nombre.arr,SQL_fecha_n.arr,SQL_sueldo.arr,SQL_cargo.arr,SQL_telefono.arr,SQL_direccion.arr,SQL_correo.arr,SQL_estado.arr);
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }
+                                }
+                        }
+
+                        }//fin busqueda empleado
+
+
+			 if(strcmp(formulario,"modemp")==0)
+                        {
+
+                         printf("   --------------------   \n   El proceso es: Formulario de Modificacion\n   -------------------\n\n");
+                         char nombre1[31];
+                         char rut1[11];
+                         char fecha_n1[31];
+                         char sueldo1[16];
+                         char cargo1[31];
+                         char telefono1[16];
+                         char direccion1[61];
+                         char correo1[61];
+                         char estado1[16];
+
+                         //Limpiamos los Strings
+
+                         memset (nombre1, 0, sizeof nombre1);
+                         memset (rut1, 0, sizeof rut1);
+                         memset (fecha_n1, 0, sizeof fecha_n1);
+                         memset (sueldo1, 0, sizeof sueldo1);
+                         memset (cargo1, 0, sizeof cargo1);
+                         memset (telefono1, 0, sizeof telefono1);
+                         memset (direccion1, 0, sizeof direccion1);
+                         memset (correo1, 0, sizeof correo1);
+                         memset (estado1, 0, sizeof estado1);
+
+                         //Recibimos los datos desde el .c
+
+                         sscanf(mensaje.texto.datos, "%6c%10c%30c%30c%15c%30c%15c%60c%60c%15c",formulario, rut1, nombre1, fecha_n1, sueldo1, cargo1, telefono1, direccion1, correo1, estado1);
+
+
+                         sprintf(SQL_nombre.arr,"%s", nombre1);
+                         SQL_nombre.len=strlen(SQL_nombre.arr);
+
+
+                         sprintf(SQL_rut.arr,"%s", rut1);
+                         SQL_rut.len=strlen(SQL_rut.arr);
+
+
+                         sprintf(SQL_fecha_n.arr,"%s", fecha_n1);
+                         SQL_fecha_n.len=strlen(SQL_fecha_n.arr);
+
+
+                         sprintf(SQL_sueldo.arr,"%s", sueldo1);
+                         SQL_sueldo.len=strlen(SQL_sueldo.arr);
+
+                         sprintf(SQL_cargo.arr,"%s", cargo1);
+                         SQL_cargo.len=strlen(SQL_cargo.arr);
+
+                         sprintf(SQL_telefono.arr,"%s", telefono1);
+                         SQL_telefono.len=strlen(SQL_telefono.arr);
+
+
+                         sprintf(SQL_direccion.arr,"%s", direccion1);
+                         SQL_direccion.len=strlen(SQL_direccion.arr);
+
+
+                         sprintf(SQL_correo.arr,"%s", correo1);
+                         SQL_correo.len=strlen(SQL_correo.arr);
+
+
+                         sprintf(SQL_estado.arr,"%s", estado1);
+                         SQL_estado.len=strlen(SQL_estado.arr);
+
+                        if(strcmp(SQL_rut.arr,"          ")==0)
+                        {
+                                memset(&respuesta,0,sizeof respuesta);
+                                sprintf(respuesta.texto.datos, "%s", "02");
+                                respuesta.mtype=pid_destino;
+                                respuesta.texto.pid=pid;
+                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                printf("No se ingreso Rut\n");
+
+                        }else
+                        {
+                                printf("El rut es: %s\n", SQL_rut.arr);
+                                EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM empleados WHERE RUT=:SQL_rut;
+                                if(SQL_count==0)
+                                {
+                                        printf("El rut no existe en la base de datos\n");
+                                        memset(&respuesta,0,sizeof respuesta);
+                                        sprintf(respuesta.texto.datos, "%s", "03");
+                                        respuesta.mtype=pid_destino;
+                                        respuesta.texto.pid=pid;
+                                        msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                }else 
+                                {       
+					if(strcmp(SQL_nombre.arr,"") == 0||strcmp(SQL_rut.arr,"") == 0 || strcmp(SQL_fecha_n.arr,"") ==0 || strcmp(SQL_sueldo.arr,"")==0 || strcmp(SQL_cargo.arr,"")==0 || strcmp(SQL_telefono.arr,"")==0 || strcmp(SQL_direccion.arr,"")==0 || strcmp(SQL_correo.arr,"")==0 || strcmp(SQL_estado.arr,"")==0)
+					{
+
+					EXEC SQL SELECT nombre,fecha_n,sueldo,cargo,telefono,direccion,correo,estado INTO :SQL_nombre, :SQL_fecha_n, :SQL_sueldo, :SQL_cargo, :SQL_telefono, :SQL_direccion, :SQL_correo, :SQL_estado FROM empleados WHERE rut=:SQL_rut;
+					EXEC SQL COMMIT;
+    
+                                        if(sqlca.sqlcode !=0)
+                                        {
+                                                printf("ERROR en la consulta SQL\n");
+						
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }else
+                                        {
+                                                printf("Empleado encontrado con exito\n");
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos,"%2s%10s%30s%30s%15s%30s%15s%60s%60s%15s","04",SQL_rut.arr,SQL_nombre.arr,SQL_fecha_n.arr,SQL_sueldo.arr,SQL_cargo.arr,SQL_telefono.arr,SQL_direccion.arr,SQL_correo.arr,SQL_estado.arr);
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }
+
+					}else
+					{
+						
+                                        EXEC SQL UPDATE empleados SET nombre=:SQL_nombre, fecha_n=:SQL_fecha_n, sueldo=:SQL_sueldo, cargo=:SQL_cargo, telefono=:SQL_telefono, direccion=:SQL_direccion, correo=:SQL_correo, estado=:SQL_estado WHERE rut=:SQL_rut;
+                                        EXEC SQL COMMIT;
+
+                                        // Revisar en caso de error en la consulta
+                                        if(sqlca.sqlcode != 0) {
+ 
+                                                printf("\nERROR en la consulta SQL\n\n");
+
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+                                        } else {
+
+                                                printf("\nEmpleado modificado con exito\n\n");
+
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "01");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+                                        }
+
+
+					}
+
+
+ 
+                                }
+                        }
+			}//fin formulario modificacion
+
+			if(strcmp(formulario,"mosemp")==0)
+			{
+			printf("Recibi: %s\n\n",mensaje.texto.datos);
+			int ccont;
+			int x;
+			sscanf(mensaje.texto.datos,"%6s%10d",formulario,&ccont);
+			EXEC SQL DECLARE curs1 CURSOR FOR SELECT rut,nombre,cargo FROM empleados ORDER BY rut;
+			EXEC SQL OPEN curs1;
+			for(x=0;x<=ccont;x++){
+			memset(SQL_nombre1.arr,0,sizeof SQL_nombre1.arr);
+                        memset(SQL_nombre2.arr,0,sizeof SQL_nombre2.arr);
+                        memset(SQL_nombre3.arr,0,sizeof SQL_nombre3.arr);
+                        memset(SQL_nombre4.arr,0,sizeof SQL_nombre4.arr);
+                        memset(SQL_nombre5.arr,0,sizeof SQL_nombre5.arr);
+                        memset(SQL_nombre6.arr,0,sizeof SQL_nombre6.arr);
+			memset(SQL_c1.arr,0,sizeof SQL_c1.arr);
+                        memset(SQL_c2.arr,0,sizeof SQL_c2.arr);
+                        memset(SQL_c3.arr,0,sizeof SQL_c3.arr);
+                        memset(SQL_c4.arr,0,sizeof SQL_c4.arr);
+                        memset(SQL_c5.arr,0,sizeof SQL_c5.arr);
+                        memset(SQL_c6.arr,0,sizeof SQL_c6.arr);
+			memset(SQL_r1.arr,0,sizeof SQL_r1.arr);
+                        memset(SQL_r2.arr,0,sizeof SQL_r2.arr);
+                        memset(SQL_r3.arr,0,sizeof SQL_r3.arr);
+                        memset(SQL_r4.arr,0,sizeof SQL_r4.arr);
+                        memset(SQL_r5.arr,0,sizeof SQL_r5.arr);
+                        memset(SQL_r6.arr,0,sizeof SQL_r6.arr);
+
+
+			EXEC SQL FETCH curs1 INTO :SQL_r1,:SQL_nombre1,:SQL_c1;
+			EXEC SQL FETCH curs1 INTO :SQL_r2,:SQL_nombre2,:SQL_c2;
+			EXEC SQL FETCH curs1 INTO :SQL_r3,:SQL_nombre3,:SQL_c3;
+			EXEC SQL FETCH curs1 INTO :SQL_r4,:SQL_nombre4,:SQL_c4;
+			EXEC SQL FETCH curs1 INTO :SQL_r5,:SQL_nombre5,:SQL_c5;
+			EXEC SQL FETCH curs1 INTO :SQL_r6,:SQL_nombre6,:SQL_c6;
+			}
+			EXEC SQL CLOSE curs1;
+                        memset(&respuesta,0,sizeof respuesta);
+			ccont=ccont++;
+			if (sqlca.sqlcode != 0)
+			{
+				sprintf(respuesta.texto.datos,"%s","02");
+			}
+			else
+			{	
+
+ 
+                        if(strcmp(SQL_r6.arr,"")==0)
+                        {
+				memset(&respuesta,0,sizeof respuesta);
+				sprintf(respuesta.texto.datos,"%2s%10d%30s%10s%30s%30s%10s%30s%30s%10s%30s%30s%10s%30s%30s%10s%30s%30s%10s%30s","03",ccont,SQL_nombre1.arr,SQL_r1.arr,SQL_c1.arr,SQL_nombre2.arr,SQL_r2.arr,SQL_c2.arr,SQL_nombre3.arr,SQL_r3.arr,SQL_c3.arr,SQL_nombre4.arr,SQL_r4.arr,SQL_c4.arr,SQL_nombre5.arr,SQL_r5.arr,SQL_c5.arr,SQL_nombre6.arr,SQL_r6.arr,SQL_c6.arr);
+			 	printf("mande: %s\n",respuesta.texto.datos);
+                                respuesta.mtype=pid_destino;
+                                respuesta.texto.pid=pid;
+                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				memset(SQL_nombre1.arr,'\0',sizeof SQL_nombre1.arr); 
+				memset(SQL_nombre2.arr,'\0',sizeof SQL_nombre2.arr);
+				memset(SQL_nombre3.arr,'\0',sizeof SQL_nombre3.arr);
+				memset(SQL_nombre4.arr,'\0',sizeof SQL_nombre4.arr);
+				memset(SQL_nombre5.arr,'\0',sizeof SQL_nombre5.arr);
+				memset(SQL_nombre6.arr,'\0',sizeof SQL_nombre6.arr);
+				memset(SQL_c1.arr,'\0',sizeof SQL_c1.arr);
+                                memset(SQL_c2.arr,'\0',sizeof SQL_c2.arr);
+                                memset(SQL_c3.arr,'\0',sizeof SQL_c3.arr);
+                                memset(SQL_c4.arr,'\0',sizeof SQL_c4.arr);
+                                memset(SQL_c5.arr,'\0',sizeof SQL_c5.arr);
+                                memset(SQL_c6.arr,'\0',sizeof SQL_c6.arr);
+				memset(SQL_r1.arr,'\0',sizeof SQL_r1.arr);
+                                memset(SQL_r2.arr,'\0',sizeof SQL_r2.arr);
+                                memset(SQL_r3.arr,'\0',sizeof SQL_r3.arr);
+                                memset(SQL_r4.arr,'\0',sizeof SQL_r4.arr);
+                                memset(SQL_r5.arr,'\0',sizeof SQL_r5.arr);
+                                memset(SQL_r6.arr,'\0',sizeof SQL_r6.arr);
+
+                                printf("No quedan mas empleados que mostrar\n");
+
+                        }
+				else{
+
+				memset(&respuesta,0,sizeof respuesta);
+				sprintf(respuesta.texto.datos,"%2s%10d%30s%10s%30s%30s%10s%30s%30s%10s%30s%30s%10s%30s%30s%10s%30s%30s%10s%30s","01",ccont,SQL_nombre1.arr,SQL_r1.arr,SQL_c1.arr,SQL_nombre2.arr,SQL_r2.arr,SQL_c2.arr,SQL_nombre3.arr,SQL_r3.arr,SQL_c3.arr,SQL_nombre4.arr,SQL_r4.arr,SQL_c4.arr,SQL_nombre5.arr,SQL_r5.arr,SQL_c5.arr,SQL_nombre6.arr,SQL_r6.arr,SQL_c6.arr);
+			 	printf("mande: %s\n",respuesta.texto.datos);
+                                respuesta.mtype=pid_destino;
+                                respuesta.texto.pid=pid;
+                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				memset(SQL_nombre1.arr,'\0',sizeof SQL_nombre1.arr); 
+				memset(SQL_nombre2.arr,'\0',sizeof SQL_nombre2.arr);
+				memset(SQL_nombre3.arr,'\0',sizeof SQL_nombre3.arr);
+				memset(SQL_nombre4.arr,'\0',sizeof SQL_nombre4.arr);
+				memset(SQL_nombre5.arr,'\0',sizeof SQL_nombre5.arr);
+				memset(SQL_nombre6.arr,'\0',sizeof SQL_nombre6.arr);
+				memset(SQL_c1.arr,'\0',sizeof SQL_c1.arr);
+                                memset(SQL_c2.arr,'\0',sizeof SQL_c2.arr);
+                                memset(SQL_c3.arr,'\0',sizeof SQL_c3.arr);
+                                memset(SQL_c4.arr,'\0',sizeof SQL_c4.arr);
+                                memset(SQL_c5.arr,'\0',sizeof SQL_c5.arr);
+                                memset(SQL_c6.arr,'\0',sizeof SQL_c6.arr);
+				memset(SQL_r1.arr,'\0',sizeof SQL_r1.arr);
+                                memset(SQL_r2.arr,'\0',sizeof SQL_r2.arr);
+                                memset(SQL_r3.arr,'\0',sizeof SQL_r3.arr);
+                                memset(SQL_r4.arr,'\0',sizeof SQL_r4.arr);
+                                memset(SQL_r5.arr,'\0',sizeof SQL_r5.arr);
+                                memset(SQL_r6.arr,'\0',sizeof SQL_r6.arr);
+
+				}
+
+			}
+		}
+		
+		if (strcmp(formulario, "regedu")==0){
+	
+				printf("   --------------------   \n   El proceso Es: Formulario Ingreso Educacion\n   --------------------\n\n");
+
+				char rut2[11];
+				char nivel1[16];
+				char centro1[61];
+				char titulo1[61];
+ 
+				//Limpiamos los Strings
+
+				memset (nivel1, 0, sizeof nivel1);
+				memset (rut2, 0, sizeof rut2);
+				memset (centro1, 0, sizeof centro1);
+				memset (titulo1, 0, sizeof titulo1);
+
+				//Recibimos los datos desde el .c
+	
+	
+				sscanf(mensaje.texto.datos,"%6c%10c%15c%60c%60c", formulario,rut2,nivel1,centro1,titulo1);
+
+
+				//Guardamos la variable en la estructura arr de rut	
+
+
+				sprintf(SQL_rut.arr,"%s", rut2);
+				SQL_rut.len=strlen(SQL_rut.arr);
+				
+				sprintf(SQL_nivel.arr,"%s", nivel1);
+				SQL_nivel.len=strlen(SQL_nivel.arr);
+				
+				sprintf(SQL_centro.arr,"%s", centro1);
+				SQL_centro.len=strlen(SQL_centro.arr);
+				
+				sprintf(SQL_titulo.arr,"%s", titulo1);
+				SQL_titulo.len=strlen(SQL_titulo.arr);
+
+
+
+				if(strcmp(SQL_rut.arr,"") == 0 || strcmp(SQL_nivel.arr,"") ==0 || strcmp(SQL_centro.arr,"")==0 || strcmp(SQL_titulo.arr,"")==0 ){
+                                       
+                                        memset( &respuesta, 0, sizeof respuesta);
+                                        sprintf(respuesta.texto.datos, "%s", "04");
+                                        respuesta.mtype = pid_destino;
+                                        respuesta.texto.pid = pid;
+                                        msgsnd(qid, &respuesta, strlen(respuesta.texto.datos)+4,0);
+					printf("Faltan campos que rellenar\n");
+
+
+				}
+				else{
+
+
+				printf("El rut es: %s\n", SQL_rut.arr);
+				printf("El nivel es: %s\n", SQL_nivel.arr);
+				printf("El centro es: %s\n", SQL_centro.arr);
+				printf("El titulo es: %s\n", SQL_titulo.arr);
+
+				// Verificamos si el empleado ya esta registrado
+				EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM educacion WHERE rut_empleado=:SQL_rut;
+
+				if( SQL_count != 0) {
+					
+					printf("El empleado ya tiene educacion registrada\n");
+					
+					memset( &respuesta, 0, sizeof respuesta);
+					sprintf(respuesta.texto.datos, "%s", "03");
+					respuesta.mtype = pid_destino;
+					respuesta.texto.pid = pid;
+					msgsnd(qid, &respuesta, strlen(respuesta.texto.datos)+4,0);
+
+				} else {
+
+
+					// Insertamos el empleado en la BdD
+					EXEC SQL INSERT INTO educacion (rut_empleado, nivel_escolaridad, centro_educativo, nombre_titulo) VALUES (:SQL_rut, :SQL_nivel, :SQL_centro, :SQL_titulo);
+					EXEC SQL COMMIT; 
+
+					// Revisar en caso de error en la consulta
+					if(sqlca.sqlcode != 0) {
+						
+						printf("\nERROR en la consulta SQL\n\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					} else {			
+
+						printf("\nEducacion del empleado ingresada con exito\n\n");	
+                            	
+						memset(&respuesta,0,sizeof respuesta);
+	                        		sprintf(respuesta.texto.datos, "%s", "01");
+       	                        		respuesta.mtype=pid_destino;
+                               	 		respuesta.texto.pid=pid;
+                                		msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+
+				} // Fin else
+				}// Fin else condiciones
+
+			}//Fin Formulario regedu
+		
+		
+		if(strcmp(formulario,"eliedu")==0)
+			{
+				
+			printf("   --------------------   \n   El proceso es: Formulario de Eliminacion Educacion\n   -------------------\n\n");
+			char rut2[11];
+
+			memset(rut2, 0, sizeof rut2);
+
+			sscanf(mensaje.texto.datos, "%6c%10c", formulario,rut2);
+
+			sprintf(SQL_rut.arr, "%s", rut2);
+			SQL_rut.len=strlen(SQL_rut.arr);
+
+			if(strcmp(SQL_rut.arr,"          ")==0)
+			{
+				memset(&respuesta,0,sizeof respuesta);
+				sprintf(respuesta.texto.datos, "%s", "02");
+				respuesta.mtype=pid_destino;
+				respuesta.texto.pid=pid;
+				msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				printf("No se ingreso Rut\n");
+
+			}else
+			{
+				printf("El rut es: %s\n", SQL_rut.arr);
+				EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM educacion WHERE rut_empleado=:SQL_rut;
+				if(SQL_count==0)
+				{ 
+					printf("El rut no existe en la base de datos\n");
+					memset(&respuesta,0,sizeof respuesta);
+					sprintf(respuesta.texto.datos, "%s", "03");
+					respuesta.mtype=pid_destino;
+					respuesta.texto.pid=pid;
+					msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				}else
+				{ 	
+
+                                	EXEC SQL DELETE FROM educacion WHERE rut_empleado=:SQL_rut;
+                                	EXEC SQL COMMIT;
+					
+					if(sqlca.sqlcode !=0)
+					{
+						printf("ERROR en la consulta SQL\n");
+						
+						memset(&respuesta,0,sizeof respuesta);
+						sprintf(respuesta.texto.datos, "%s", "03");
+						respuesta.mtype=pid_destino;
+						respuesta.texto.pid=pid;
+						msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+					}else
+					{
+						printf("Empleado borrado con exito\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+						sprintf(respuesta.texto.datos, "%s", "01");
+						respuesta.mtype=pid_destino;
+						respuesta.texto.pid=pid;
+						msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+				}
+			}
+						
+			}//fin eliminacion educacion empleado	
+
+
+
+	    if(strcmp(formulario,"busedu")==0)
+                        {
+
+                        printf("   --------------------   \n   El proceso es: Formulario de Busqueda\n   -------------------\n\n");
+                        char rut2[11];
+
+                        memset(rut2, 0, sizeof rut2);
+
+                        sscanf(mensaje.texto.datos, "%6c%10c", formulario,rut2);
+
+                        sprintf(SQL_rut.arr, "%s", rut2);
+                        SQL_rut.len=strlen(SQL_rut.arr);
+
+                        if(strcmp(SQL_rut.arr,"          ")==0)
+                        {
+                                memset(&respuesta,0,sizeof respuesta);
+                                sprintf(respuesta.texto.datos, "%s", "02");
+                                respuesta.mtype=pid_destino;
+                                respuesta.texto.pid=pid;
+                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                printf("No se ingreso Rut\n");
+
+                        }else
+                        {
+                                printf("El rut es: %s\n", SQL_rut.arr);
+
+
+                                EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM educacion WHERE rut_empleado=:SQL_rut;
+                                if(SQL_count==0)
+                                {
+                                        printf("El rut no existe en la base de datos\n");
+                                        memset(&respuesta,0,sizeof respuesta);
+                                        sprintf(respuesta.texto.datos, "%s", "03");
+                                        respuesta.mtype=pid_destino;
+                                        respuesta.texto.pid=pid;
+                                        msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                }else
+					{       
+
+					EXEC SQL SELECT nivel_escolaridad, centro_educativo, nombre_titulo INTO :SQL_nivel, :SQL_centro, :SQL_titulo FROM educacion WHERE rut_empleado=:SQL_rut;
+					EXEC SQL COMMIT;
+    
+                                        if(sqlca.sqlcode !=0)
+                                        {
+                                                printf("ERROR en la consulta SQL\n");
+						
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "03");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }else
+                                        {
+                                                printf("Empleado encontrado con exito\n");
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%2s%16s%61s%61s","01",SQL_nivel.arr,SQL_centro.arr,SQL_titulo.arr);
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }
+                                }
+                        }
+
+                        }//fin busqueda educacion empleado
+
+		
+		if(strcmp(formulario,"modedu")==0)
+                        {
+
+                         printf("   --------------------   \n   El proceso es: Formulario de Modificacion Educacion\n   -------------------\n\n");
+
+				char rut2[11];
+				char nivel1[16];
+				char centro1[61];
+				char titulo1[61];
+ 
+				//Limpiamos los Strings
+
+				memset (nivel1, 0, sizeof nivel1);
+				memset (rut2, 0, sizeof rut2);
+				memset (centro1, 0, sizeof centro1);
+				memset (titulo1, 0, sizeof titulo1);
+
+				//Recibimos los datos desde el .c
+	
+	
+				sscanf(mensaje.texto.datos,"%6c%10c%15c%60c%60c", formulario,rut2,nivel1,centro1,titulo1);
+
+
+				//Guardamos la variable en la estructura arr de rut	
+
+
+				sprintf(SQL_rut.arr,"%s", rut2);
+				SQL_rut.len=strlen(SQL_rut.arr);
+				
+				sprintf(SQL_nivel.arr,"%s", nivel1);
+				SQL_nivel.len=strlen(SQL_nivel.arr);
+				
+				sprintf(SQL_centro.arr,"%s", centro1);
+				SQL_centro.len=strlen(SQL_centro.arr);
+				
+				sprintf(SQL_titulo.arr,"%s", titulo1);
+				SQL_titulo.len=strlen(SQL_titulo.arr);
+
+
+                        if(strcmp(SQL_rut.arr,"          ")==0)
+                        {
+                                memset(&respuesta,0,sizeof respuesta);
+                                sprintf(respuesta.texto.datos, "%s", "02");
+                                respuesta.mtype=pid_destino;
+                                respuesta.texto.pid=pid;
+                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                printf("No se ingreso Rut\n");
+
+                        }else
+                        {
+                                printf("El rut es: %s\n", SQL_rut.arr);
+                                EXEC SQL SELECT COUNT(*) INTO :SQL_count FROM educacion WHERE rut_empleado=:SQL_rut;
+                                if(SQL_count==0)
+                                {
+                                        printf("El rut no existe en la base de datos\n");
+                                        memset(&respuesta,0,sizeof respuesta);
+                                        sprintf(respuesta.texto.datos, "%s", "03");
+                                        respuesta.mtype=pid_destino;
+                                        respuesta.texto.pid=pid;
+                                        msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                }else 
+                                {       
+					if(strcmp(SQL_rut.arr,"") == 0 || strcmp(SQL_nivel.arr,"") ==0 || strcmp(SQL_centro.arr,"")==0 || strcmp(SQL_titulo.arr,"")==0)
+					{
+
+					EXEC SQL SELECT nivel_escolaridad, centro_educativo, nombre_titulo INTO :SQL_nivel, :SQL_centro, :SQL_titulo FROM educacion WHERE rut_empleado=:SQL_rut;
+					EXEC SQL COMMIT;
+    
+                                        if(sqlca.sqlcode !=0)
+                                        {
+                                                printf("ERROR en la consulta SQL\n");
+						
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }else
+                                        {
+                                                printf("Educacion del empleado encontrada con exito\n");
+                                                memset(&respuesta,0,sizeof respuesta);
+						      sprintf(respuesta.texto.datos, "%2s%10s%16s%61s%61s","04",SQL_rut.arr,SQL_nivel.arr,SQL_centro.arr,SQL_titulo.arr);
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+                                        }
+
+					}else
+					{
+						
+                                        EXEC SQL UPDATE educacion SET nivel_escolaridad=:SQL_nivel, centro_educativo=:SQL_centro, nombre_titulo=:SQL_titulo WHERE rut_empleado=:SQL_rut;
+                                        EXEC SQL COMMIT;
+
+                                        // Revisar en caso de error en la consulta
+                                        if(sqlca.sqlcode != 0) {
+ 
+                                                printf("\nERROR en la consulta SQL\n\n");
+
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+                                        } else {
+
+                                                printf("\nEmpleado modificado con exito\n\n");
+
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "01");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+                                        }
+
+
+					}
+
+
+ 
+                                }
+                        }
+			}//fin formulario modificacion educacion
+
+//transacciones de interfaz
+
+	if(strcmp(formulario,"logusu") == 0)
+		{ printf("\nEn logusu\n\n");
+			char cla[11];
+			char nom[16];
+			memset(cla,'\0',sizeof cla);
+			memset(nom,'\0',sizeof nom);
+			sscanf(mensaje.texto.datos,"%6c%15s%10s",formulario,nom,cla);
+			
+			 
+			sprintf(SQL_nombrelog.arr,"%s", nom);
+			SQL_nombrelog.len=strlen(SQL_nombrelog.arr);
+			
+			sprintf(SQL_passlog.arr,"%s", cla);
+			SQL_passlog.len=strlen(SQL_passlog.arr);
+			   
+			   
+			EXEC SQL SELECT COUNT (*) INTO :SQL_count FROM users WHERE nombre = :SQL_nombrelog AND pass=:SQL_passlog;
+			memset(&respuesta,0,sizeof respuesta);
+			if (SQL_count == 0)
+			{printf("\nNo existe user\n\n");
+				sprintf(respuesta.texto.datos,"%2s","02");
+				 	 
+			}
+			else
+			{printf("\nExiste user\n\n");
+					sprintf(respuesta.texto.datos,"%2s","01");
+ 
+			}
+			
+			
+			respuesta.mtype = pid_destino;
+      		respuesta.texto.pid = pid;
+      		msgsnd (qid, &respuesta, strlen(respuesta.texto.datos)+4, 0);
+		}
+		//fin logusu
+		
+		if(strcmp(formulario,"inscar") == 0)
+		{ printf("\nEn inscar\n\n");
+			char descrip[1001];
+			char nomc[61];
+			memset(descrip,'\0',sizeof descrip);
+			memset(nomc,'\0',sizeof nomc);
+			sscanf(mensaje.texto.datos,"%6c%60c%1000[^\n]",formulario,nomc,descrip);
+			
+
+			
+			
+			printf("El nomc es: %s", nomc);
+			printf("El descripcion es: %s\n", descrip);
+
+			 
+			sprintf(SQL_nombrecargo.arr,"%s", nomc);
+			SQL_nombrecargo.len=strlen(SQL_nombrecargo.arr);
+			
+			sprintf(SQL_descripcion.arr,"%s", descrip);
+			SQL_descripcion.len=strlen(SQL_descripcion.arr);
+			   
+			EXEC SQL SELECT COUNT (*) INTO :SQL_count FROM cargos WHERE nombre_cargo = :SQL_nombrecargo;
+			memset(&respuesta,0,sizeof respuesta);
+			if (SQL_count == 0)
+			{printf("\nNo existe cargo\n\n");
+			
+							EXEC SQL INSERT INTO cargos (nombre_cargo,descripcion) VALUES (:SQL_nombrecargo,:SQL_descripcion);
+                                EXEC SQL COMMIT;
+                                if (sqlca.sqlcode != 0)
+                                {
+                                        printf("Error al ingresar el cargo");
+                                        sprintf(respuesta.texto.datos,"%s","03");
+                                }
+                                else
+                                {
+                                        printf("Cargo Ingresado correctamente\n\n");
+                                }
+			
+				sprintf(respuesta.texto.datos,"%2s","01");
+				 	 
+			}
+			else
+			{printf("\nExiste cargo\n\n");
+					sprintf(respuesta.texto.datos,"%2s","02");
+ 
+			}
+			
+			
+			respuesta.mtype = pid_destino;
+      		respuesta.texto.pid = pid;
+      		msgsnd (qid, &respuesta, strlen(respuesta.texto.datos)+4, 0);
+		}
+		//fin inscar
+		
+		
+		if(strcmp(formulario,"modcar") == 0)
+		{ printf("\nEn modcar\n\n");
+			char descrip[1001];
+			char nomc[61];
+			memset(descrip,'\0',sizeof descrip);
+			memset(nomc,'\0',sizeof nomc);
+			sscanf(mensaje.texto.datos,"%6c%60c%1000[^\n]",formulario,nomc,descrip);
+			
+
+			
+			
+			printf("El nomc es: %s", nomc);
+			printf("El descripcion es: %s\n", descrip);
+
+			 
+			sprintf(SQL_nombrecargo.arr,"%s", nomc);
+			SQL_nombrecargo.len=strlen(SQL_nombrecargo.arr);
+			
+			sprintf(SQL_descripcion.arr,"%s", descrip);
+			SQL_descripcion.len=strlen(SQL_descripcion.arr);
+			   
+			//EXEC SQL SELECT COUNT (*) INTO :SQL_count FROM cargos WHERE nombre_cargo = :SQL_nombrecargo;
+			memset(&respuesta,0,sizeof respuesta);
+			//if (SQL_count == 0)
+			//{printf("\nNo existe cargo\n\n");
+			
+							EXEC SQL UPDATE cargos SET descripcion = :SQL_descripcion WHERE nombre_cargo = :SQL_nombrecargo;
+                                EXEC SQL COMMIT;
+                                if (sqlca.sqlcode != 0)
+                                {
+                                        printf("Error al ingresar el cargo");
+                                        sprintf(respuesta.texto.datos,"%s","03");
+                                }
+                                else
+                                {
+                                        printf("Cargo Ingresado correctamente\n\n");
+                                }
+			
+				sprintf(respuesta.texto.datos,"%2s","01");
+				 	 
+			//}
+			//else
+			//{printf("\nExiste cargo\n\n");
+			//		sprintf(respuesta.texto.datos,"%2s","02");
+ 
+	//		}
+			
+			
+			respuesta.mtype = pid_destino;
+      		respuesta.texto.pid = pid;
+      		msgsnd (qid, &respuesta, strlen(respuesta.texto.datos)+4, 0);
+		}
+		//fin modcar
+		
+		
+		if(strcmp(formulario,"buscar") == 0)
+		{ printf("\nEn buscar\n\n");
+			char descrip[1001];
+			char nomc[61];
+			memset(descrip,'\0',sizeof descrip);
+			memset(nomc,'\0',sizeof nomc);
+			sscanf(mensaje.texto.datos,"%6c%60c",formulario,nomc);
+			
+	       
+			
+			
+			printf("El nomc es: %s", nomc);
+
+			 
+			sprintf(SQL_nombrecargo.arr,"%s", nomc);
+			SQL_nombrecargo.len=strlen(SQL_nombrecargo.arr);
+			
+			sprintf(SQL_descripcion.arr,"%s", descrip);
+			SQL_descripcion.len=strlen(SQL_descripcion.arr);
+			   
+			//EXEC SQL SELECT COUNT (*) INTO :SQL_count FROM cargos WHERE nombre_cargo = :SQL_nombrecargo;
+			memset(&respuesta,0,sizeof respuesta);
+			//if (SQL_count != 0)
+			//{
+			
+							EXEC SQL SELECT nombre_cargo,descripcion INTO :SQL_nombrecargo,:SQL_descripcion FROM cargos WHERE nombre_cargo=:SQL_nombrecargo;
+                                EXEC SQL COMMIT;
+                                if (sqlca.sqlcode != 0)
+                                {
+                                        printf("Error al buscar el cargo");
+                                        sprintf(respuesta.texto.datos,"%s","03");
+                                }
+                                else
+                                {
+                                        printf("Cargo encontrado correctamente\n\n");
+                                }
+			
+				sprintf(respuesta.texto.datos,"/%2s/%6s/%1000s","01",SQL_nombrecargo.arr,SQL_descripcion.arr);
+				 	 
+			//}
+			//else
+			//{printf("\nNo existe cargo\n\n");
+			//		sprintf(respuesta.texto.datos,"%2s","02");
+ 
+			//}
+			
+			
+			respuesta.mtype = pid_destino;
+      		respuesta.texto.pid = pid;
+      		msgsnd (qid, &respuesta, strlen(respuesta.texto.datos)+4, 0);
+		}
+		//fin buscar
+		
+		if(strcmp(formulario,"elicar") == 0)
+		{ printf("\nEn elicar\n\n");
+			char descrip[1001];
+			char nomc[61];
+			memset(descrip,'\0',sizeof descrip);
+			memset(nomc,'\0',sizeof nomc);
+			sscanf(mensaje.texto.datos,"%6c%60c",formulario,nomc);
+			
+	       
+			
+			
+			printf("El nomc es: %s", nomc);
+
+			 
+			sprintf(SQL_nombrecargo.arr,"%s", nomc);
+			SQL_nombrecargo.len=strlen(SQL_nombrecargo.arr);
+			
+			sprintf(SQL_descripcion.arr,"%s", descrip);
+			SQL_descripcion.len=strlen(SQL_descripcion.arr);
+			   
+			//EXEC SQL SELECT COUNT (*) INTO :SQL_count FROM cargos WHERE nombre_cargo = :SQL_nombrecargo;
+			memset(&respuesta,0,sizeof respuesta);
+			//if (SQL_count != 0)
+			//{
+			
+							EXEC SQL DELETE FROM cargos WHERE nombre_cargo=:SQL_nombrecargo;
+                                EXEC SQL COMMIT;
+                                if (sqlca.sqlcode != 0)
+                                {
+                                        printf("Error al buscar el cargo");
+                                        sprintf(respuesta.texto.datos,"%s","03");
+                                }
+                                else
+                                {
+                                        printf("Cargo encontrado correctamente\n\n");
+                                }
+			
+				sprintf(respuesta.texto.datos,"/%2s/%6s/%1000s","01",SQL_nombrecargo.arr,SQL_descripcion.arr);
+				 	 
+			//}
+			//else
+			//{printf("\nNo existe cargo\n\n");
+			//		sprintf(respuesta.texto.datos,"%2s","02");
+ 
+			//}
+			
+			
+			respuesta.mtype = pid_destino;
+      		respuesta.texto.pid = pid;
+      		msgsnd (qid, &respuesta, strlen(respuesta.texto.datos)+4, 0);
+		}
+		//fin elicar
+		
+		if(strcmp(formulario,"insemp") == 0)
+		{ printf("\nEn insemp\n\n");
+			char descrip[1001];
+			char nomc[61];
+			memset(descrip,'\0',sizeof descrip);
+			memset(nomc,'\0',sizeof nomc);
+			sscanf(mensaje.texto.datos,"%6c",formulario);
+			
+	       
+			
+			
+			//printf("El nomc es: %s", nomc);
+
+			 
+			sprintf(SQL_nombrecargo.arr,"%s", nomc);
+			SQL_nombrecargo.len=strlen(SQL_nombrecargo.arr);
+			
+			sprintf(SQL_descripcion.arr,"%s", descrip);
+			SQL_descripcion.len=strlen(SQL_descripcion.arr);
+			   
+			//EXEC SQL SELECT COUNT (*) INTO :SQL_count FROM cargos WHERE nombre_cargo = :SQL_nombrecargo;
+			memset(&respuesta,0,sizeof respuesta);
+			//if (SQL_count != 0)
+			//{
+			
+							EXEC SQL SELECT nombre_cargo INTO :SQL_descripcion FROM cargos;
+                                EXEC SQL COMMIT;
+                                if (sqlca.sqlcode != 0)
+                                {
+                                        printf("Error al buscar el cargo");
+                                        sprintf(respuesta.texto.datos,"%s","03");
+                                }
+                                else
+                                {
+                                        printf("Cargo encontrado correctamente\n\n");
+					printf("datos: %s" ,SQL_descripcion.arr);
+                                }
+				sprintf(respuesta.texto.datos,"/%2s/%1000s","01",SQL_descripcion.arr);
+				 	 
+			//}
+			//else
+			//{printf("\nNo existe cargo\n\n");
+			//		sprintf(respuesta.texto.datos,"%2s","02");
+ 
+			//}
+			
+			
+			respuesta.mtype = pid_destino;
+      		respuesta.texto.pid = pid;
+      		msgsnd (qid, &respuesta, strlen(respuesta.texto.datos)+4, 0);
+		}
+		//fin insemp
+		
+		if(strcmp(formulario,"moscar") == 0)
+		{ 			printf("Recibi: %s\n\n",mensaje.texto.datos);
+			int ccont2;
+			int x;
+			sscanf(mensaje.texto.datos,"%6s%10d",formulario,&ccont2);
+			EXEC SQL DECLARE curs2 CURSOR FOR SELECT nombre_cargo,descripcion FROM cargos;
+			EXEC SQL OPEN curs2;
+			
+			//for(x=0;x<=ccont2;x++){
+			memset(SQL_nombrec1.arr,0,sizeof SQL_nombrec1.arr);
+                
+
+			//	memset(SQL_nombrec2.arr,0,sizeof SQL_nombrec2.arr);
+                   //       memset(SQL_nombrec3.arr,0,sizeof SQL_nombrec3.arr);
+                     //     memset(SQL_nombrec4.arr,0,sizeof SQL_nombrec4.arr);
+                       //   memset(SQL_nombrec5.arr,0,sizeof SQL_nombrec5.arr);
+                        //  memset(SQL_nombrec6.arr,0,sizeof SQL_nombrec6.arr);
+			memset(SQL_dc1.arr,0,sizeof SQL_dc1.arr);
+                       //memset(SQL_dc2.arr,0,sizeof SQL_dc2.arr);
+                  //      memset(SQL_dc3.arr,0,sizeof SQL_dc3.arr);
+                  //      memset(SQL_dc4.arr,0,sizeof SQL_dc4.arr);
+                  //      memset(SQL_dc5.arr,0,sizeof SQL_dc5.arr);
+                  //      memset(SQL_dc6.arr,0,sizeof SQL_dc6.arr);
+
+
+			EXEC SQL FETCH curs2 INTO :SQL_nombrec1,:SQL_dc1;
+			//EXEC SQL FETCH curs2 INTO :SQL_nombrec2,:SQL_dc2;
+			//EXEC SQL FETCH curs2 INTO :SQL_nombrec3,:SQL_dc3;
+			//EXEC SQL FETCH curs2 INTO :SQL_nombrec4,:SQL_dc4;
+			//EXEC SQL FETCH curs2 INTO :SQL_nombrec5,:SQL_dc5;
+			//EXEC SQL FETCH curs2 INTO :SQL_nombrec6,:SQL_dc6;
+			//}
+			EXEC SQL CLOSE curs2;
+                        memset(&respuesta,0,sizeof respuesta);
+						
+			//ccont2=ccont2++;
+			//if (sqlca.sqlcode != 0)
+			//{   
+			//			sprintf(respuesta.texto.datos,"%s","02");
+			//}
+			//else
+			//{	
+
+ 
+                //        if(strcmp(SQL_nombrec6.arr,"")==0)
+                  //      {
+				//memset(&respuesta,0,sizeof respuesta);
+				//sprintf(respuesta.texto.datos,"%2s%10d%60s%1000s%60s%1000s%60s%1000s%60s%1000s%60s%1000s%60s%1000s","03",ccont2,SQL_nombrec1.arr,SQL_dc1.arr,SQL_nombrec2.arr,SQL_dc2.arr,SQL_nombrec3.arr,SQL_dc3.arr,SQL_nombrec4.arr,SQL_dc4.arr,SQL_nombrec5.arr,SQL_dc5.arr,SQL_nombrec6.arr,SQL_dc6.arr);
+			 	//sprintf(respuesta.texto.datos,"%2s%10d%60s%1000s","03",ccont2,SQL_nombrec1.arr,SQL_dc1.arr);
+				//printf("mande: %s\n",respuesta.texto.datos);
+                 //               respuesta.mtype=pid_destino;
+                 //               respuesta.texto.pid=pid;
+                 //               msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				//memset(SQL_nombrec1.arr,'\0',sizeof SQL_nombrec1.arr); 
+				//memset(SQL_nombrec2.arr,'\0',sizeof SQL_nombrec2.arr);
+				//memset(SQL_nombrec3.arr,'\0',sizeof SQL_nombrec3.arr);
+				//memset(SQL_nombrec4.arr,'\0',sizeof SQL_nombrec4.arr);
+				//memset(SQL_nombrec5.arr,'\0',sizeof SQL_nombrec5.arr);
+				//memset(SQL_nombrec6.arr,'\0',sizeof SQL_nombrec6.arr);
+				//memset(SQL_dc1.arr,'\0',sizeof SQL_dc1.arr);
+                              //  memset(SQL_dc2.arr,'\0',sizeof SQL_dc2.arr);
+                               // memset(SQL_dc3.arr,'\0',sizeof SQL_dc3.arr);
+                               // memset(SQL_dc4.arr,'\0',sizeof SQL_dc4.arr);
+                              //  memset(SQL_dc5.arr,'\0',sizeof SQL_dc5.arr);
+                              //  memset(SQL_dc6.arr,'\0',sizeof SQL_dc6.arr);
+
+                       //         printf("No quedan mas cargos que mostrar-b\n");
+
+                    //    }
+				//else{
+
+				memset(&respuesta,0,sizeof respuesta);
+				//sprintf(respuesta.texto.datos,"%2s%10d%60s%1000s%60s%1000s%60s%1000s%60s%1000s%60s%1000s%60s%1000s","01",ccont2,SQL_nombrec1.arr,SQL_dc1.arr,SQL_nombrec2.arr,SQL_dc2.arr,SQL_nombrec3.arr,SQL_dc3.arr,SQL_nombrec4.arr,SQL_dc4.arr,SQL_nombrec5.arr,SQL_dc5.arr,SQL_nombrec6.arr,SQL_dc6.arr);
+			 	sprintf(respuesta.texto.datos,"/%2s/%60s/%1000s","01",SQL_nombrec1.arr,SQL_dc1.arr);  
+				printf("mande: %s\n",respuesta.texto.datos);
+                                respuesta.mtype=pid_destino;
+                                respuesta.texto.pid=pid;
+                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+				memset(SQL_nombrec1.arr,'\0',sizeof SQL_nombrec1.arr); 
+				//memset(SQL_nombrec2.arr,'\0',sizeof SQL_nombrec2.arr);
+				//memset(SQL_nombrec3.arr,'\0',sizeof SQL_nombrec3.arr);
+				//memset(SQL_nombrec4.arr,'\0',sizeof SQL_nombrec4.arr);
+				//memset(SQL_nombrec5.arr,'\0',sizeof SQL_nombrec5.arr);
+				//memset(SQL_nombrec6.arr,'\0',sizeof SQL_nombrec6.arr);
+				memset(SQL_dc1.arr,'\0',sizeof SQL_dc1.arr);
+                               //memset(SQL_dc2.arr,'\0',sizeof SQL_dc2.arr);
+                            //   memset(SQL_dc3.arr,'\0',sizeof SQL_dc3.arr);
+                           //    memset(SQL_dc4.arr,'\0',sizeof SQL_dc4.arr);
+                           //     memset(SQL_dc5.arr,'\0',sizeof SQL_dc5.arr);
+                            //    memset(SQL_dc6.arr,'\0',sizeof SQL_dc6.arr);
+
+
+				//}
+
+			//}
+		}
+		//fin moscar
+	
+
+		if(strcmp(formulario,"caremp") == 0)
+		{ 			printf("Recibi: %s\n\n",mensaje.texto.datos);
+			int ccont2;
+			int x;
+			sscanf(mensaje.texto.datos,"%6s%10d",formulario,&ccont2);
+			
+		}
+		//fin caremp	
+		
+		
+		if(strcmp(formulario,"fondos") == 0)
+				{ 			
+						printf("En fondos");
+
+						sscanf(mensaje.texto.datos,"%6s",formulario);
+						EXEC SQL SELECT capital INTO :SQL_capital FROM fondos;
+						EXEC SQL COMMIT;
+			
+										
+					if(sqlca.sqlcode != 0) {
+						
+						printf("\nERROR en la consulta SQL\n\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					} else {			 
+												printf("\nConsulta fondos bien SQL\n\n");
+												printf("fondos:%d\n", SQL_capital);
+                                                memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "/%2s/%10d","01",SQL_capital);
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+			 
+				}
+		//fin fondos	
+		
+		 
+		if(strcmp(formulario,"modfon") == 0)
+				{ 			
+						printf("En modfon");
+
+						int dinero3;
+						
+						char fodos_new[11];
+
+                         //Limpiamos los Strings
+
+                         memset (fodos_new, 0, sizeof fodos_new);
+
+                         //Recibimos los datos desde el .c
+
+                        sscanf(mensaje.texto.datos,"%6c%10d",formulario,&dinero3);
+									
+						SQL_num1=dinero3;
+ 
+						printf("Se reciben los siguientes datos:\nDinero: %d\n\n",SQL_num1);
+						
+			             EXEC SQL UPDATE fondos SET capital=:SQL_num1;
+                         EXEC SQL COMMIT;
+			
+					if(sqlca.sqlcode != 0) 
+						{
+						
+						printf("\nERROR en la actualizacion SQL\n\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+                        sprintf(respuesta.texto.datos, "%s", "02");
+                        respuesta.mtype=pid_destino;
+                        respuesta.texto.pid=pid;
+                        msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+						} else {			 
+								printf("\nactualizacion fondos bien SQL\n\n");
+								memset(&respuesta,0,sizeof respuesta);
+								sprintf(respuesta.texto.datos, "%s", "01");
+								respuesta.mtype=pid_destino;
+								respuesta.texto.pid=pid;
+								msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+			 
+				}
+		//fin modfon
+		
+		
+		if(strcmp(formulario,"fonmos") == 0)
+				{ 			
+						printf("En fonmos");
+
+						sscanf(mensaje.texto.datos,"%6s",formulario);
+						//EXEC SQL SELECT nombre,rut,sueldo,estado_p INTO :SQL_nombref,:SQL_rutf,:SQL_sueldof,:SQL_estadof FROM empleados;
+						//EXEC SQL COMMIT;
+
+						
+						
+								EXEC SQL DECLARE curs3 CURSOR FOR SELECT nombre,rut,sueldo,estado_p FROM empleados;
+			EXEC SQL OPEN curs3;
+			
+			memset(SQL_nombref.arr,0,sizeof SQL_nombref.arr);
+			memset(SQL_rutf.arr,0,sizeof SQL_rutf.arr);
+			memset(SQL_sueldof.arr,0,sizeof SQL_sueldof.arr);
+			memset(SQL_estadof.arr,0,sizeof SQL_estadof.arr);
+
+
+			EXEC SQL FETCH curs3 INTO :SQL_nombref,:SQL_rutf,:SQL_sueldof,:SQL_estadof;
+						
+						
+						
+										
+					if(sqlca.sqlcode != 0) {
+						
+						printf("\nERROR en la consulta SQL\n\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+                                                sprintf(respuesta.texto.datos, "%s", "02");
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					} else {			 
+												printf("\nConsulta fonmos bien SQL2\n\n");
+												//printf("fonmos5:%s\n", SQL_nombref);
+                                                memset(&respuesta,0,sizeof respuesta);
+												
+                                                sprintf(respuesta.texto.datos, "/%2s/%60s/%10s/%15s/%2s","01",SQL_nombref.arr,SQL_rutf.arr,SQL_sueldof.arr,SQL_estadof.arr);
+												
+												
+                                                respuesta.mtype=pid_destino;
+                                                respuesta.texto.pid=pid;
+                                                msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+			 
+				}
+		//fin fonmos	
+	
+
+if(strcmp(formulario,"fonpag") == 0)
+				{ 			
+						printf("En fonpag2");
+						char remp[11];
+						int dinero3;
+						
+						char fodos_new[11];
+
+                         //Limpiamos los Strings
+						memset(remp,'\0',sizeof remp);
+                         memset (fodos_new, 0, sizeof fodos_new);
+
+                         //Recibimos los datos desde el .c
+
+                        sscanf(mensaje.texto.datos,"%6c%10s",formulario,remp);
+									
+						//sprintf(SQL_rutfondos.arr,"%s", remp);
+						//SQL_rutfondos.len=strlen(SQL_rutfondos.arr);
+
+				sprintf(SQL_rut.arr,"%s", remp);
+				SQL_rut.len=strlen(SQL_rut.arr);
+printf("El rut es: %s", SQL_rut.arr); 
+
+						
+						//printf("Se reciben los siguientes datos:\nrutemp: %s\n\n",SQL_rutfondos);
+						
+						EXEC SQL SELECT sueldo INTO :SQL_sueldocap FROM empleados WHERE rut=:SQL_rut;
+						EXEC SQL COMMIT;
+						if(sqlca.sqlcode != 0) 
+						{printf("\nERROR select sueldo SQL\n\n");}
+						
+						EXEC SQL SELECT capital INTO :SQL_capital FROM fondos;
+						EXEC SQL COMMIT;
+						if(sqlca.sqlcode != 0) 
+						{printf("\nERROR select capital SQL\n\n");}
+ printf("sueldo:%d\n", SQL_sueldocap);
+
+printf("capital:%d\n", SQL_capital);
+
+printf("resto:%d\n", SQL_num1);
+
+						SQL_num1=SQL_capital-SQL_sueldocap;
+						if(SQL_num1<0){SQL_num1=0;}
+						
+			             EXEC SQL UPDATE fondos SET capital=:SQL_num1;
+                         EXEC SQL COMMIT;
+						 if(sqlca.sqlcode != 0) 
+						{printf("\nERROR update fondos SQL\n\n");}
+						 
+						 EXEC SQL UPDATE empleados SET estado_p='2'; 
+                         EXEC SQL COMMIT;
+						 if(sqlca.sqlcode != 0) 
+						{printf("\nERROR update empleados SQL\n\n");}
+			
+					if(sqlca.sqlcode != 0) 
+						{
+						
+						printf("\nERROR en la actualizacion SQL\n\n");
+
+						memset(&respuesta,0,sizeof respuesta);
+                        sprintf(respuesta.texto.datos, "%s", "02");
+                        respuesta.mtype=pid_destino;
+                        respuesta.texto.pid=pid;
+                        msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+						} else {			 
+								printf("\nactualizacion fondos bien SQL\n\n");
+								memset(&respuesta,0,sizeof respuesta);
+								sprintf(respuesta.texto.datos, "%s", "01");
+								respuesta.mtype=pid_destino;
+								respuesta.texto.pid=pid;
+								msgsnd(qid,&respuesta,strlen(respuesta.texto.datos)+4,0);
+
+					}
+			 
+				}
+		//fin fonpag	
+		
+		
+}
+}
+}
+
+

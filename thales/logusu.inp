@@ -1,0 +1,15 @@
+ID logusu 580040 100 10
+
+box 01 01 23 79
+cf 02 35 10 Log-in
+cf 03 35 10 ------
+cf 05 03 10 Nombre
+ce 05 23 09 00 AN 0
+cf 07 03 10 Clave
+ce 07 23 10 09 AN 0
+tm 01 02 Ingreso exitoso
+tm 02 02 Usuario o clave incorrecta
+tm 03 03 Ingrese todos los datos
+cm 20 20 02 00
+fs 22 70
+ff
