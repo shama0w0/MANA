@@ -1,103 +1,98 @@
 <?php
+$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' ";
+$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 session_start();
 
 function login()
-{	if(!isset($_SESSION["nombre"]))
+{	
+if(!isset($_SESSION["nombre"]))
 	{
 		?>
 		<form id="login" action="index.php?ac=login" method= "post" style="margin:0px;">
-		Usuario <input type="text" name="nombre" size="15"/>
-		Password <input type="password" name="pass" size="10"/>
-		<input type="submit" value="Login"/>
+		<b><font color="black" size="+0">Usuario: </font></b><input type="text" name="nombre" size="15"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<b><font color="black" size="+0">Contraseña: </font> <input type="password" name="password" size="10"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="submit" value="INGRESAR"/>
 		</form>
+
+		
 		<?php
-	}
+	} 
 	else{
-		echo "Bienvenido, <b>".$_SESSION["nombre"]."</b>"   ;
-		echo " <a href=\"index.php?ac=logout\">Cerrar sesi&oacute;n</a>";
+		?><b><font color="black" size="+0"> <?php echo "Bienvenido <b>".$_SESSION["nombre"]."</b>,   "; ?></font></b>
+		<b><font size="+0"> <?php echo " <a href=\"index.php?ac=logout\">Cerrar sesi&oacute;n</a>"; ?></font></b>
+		<? 
+		$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' ";
+		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
+		$username = $_SESSION["nombre"];
+		$query = pg_query($con,"SELECT * FROM usuarios WHERE nombre = '$username'") or die("Error consulta SQL");
+		$datapermiso = pg_fetch_array($query);
+		if($datapermiso['permisos'] == "administrador")
+			{?>
+			<form action="configadmin.php" method="post" style="text-align:center">
+				<input type=image src="images/engrana.png" width="30" height="30" >
+			</form>
+			<?php
+			}
 		}
 	if (isset($_GET['ac']))
 	{
 		switch($_GET['ac'])
-		{
+			{
 			case  "login":  
-							$host = "localhost";
-							$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-							$puerto = 3024;
-							$buffer = "hola";
-							$salida= ' ';
-							socket_connect($socket, $host, $puerto);
-							socket_write($socket,'hola');
-							
-						 	$_SESSION["id"] = socket_read($socket,2048);
-							socket_close($socket);
-						    $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-							socket_connect($socket, $host, $puerto);
-
-				    
-						  	$nombre = $_POST['nombre'];
-                            while (strlen($nombre) < 15)
-                            {
-                                    $nombre= $nombre.' ';
-                            }
-                            $clave= $_POST['pass'];
-							$_SESSION["pass"]= $clave;
-                            while (strlen($clave) < 10)
-                            {
-                                    $clave= $clave.' ';
-                            }
-                            $buffer = $_SESSION["id"]."TXIN 000580042logusu00".$nombre.$clave;
-                            $salida= ' ';
-                            socket_write($socket, $buffer);
-
-							while($salida = socket_read($socket,3024))
-							{							      
-						        break;
+				if($_POST['nombre']!=NULL && $_POST['password']!=NULL)
+					{
+					$username=$_POST['nombre'];
+					$password=$_POST['password'];
+					$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' ";
+					$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+					$query = pg_query($con,"SELECT nombre,clave FROM usuarios WHERE nombre = '$username'") or die("Error consulta SQL");
+					$data = pg_fetch_array($query);
+					if($data['clave'] != $password || $data['nombre']!= $username) 
+						{
+						
+						print "<script>alert('Login incorrecto. Revise que el usuario y la clave sean correctos.')</script>";
+						header("refresh:1; url=index.php"); 
+						}else{
+							$query = pg_query("SELECT nombre,clave FROM usuarios WHERE nombre = '$username'") or die(pg_last_error());
+							$row = pg_fetch_array($query);
+							$_SESSION["s_username"] = $row['nombre'];                  	
+							$_SESSION["nombre"] = $row['nombre'];
+							print "<script>alert('Has ingresado correctamente ".$_SESSION['nombre'].".')</script>"; 
+							header("refresh:0; url=index.php");
+							exit;
 							}
-							socket_close($socket);
 
-							if ($salida == 'OK! logusu0001')
-							{
-								$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-								$_SESSION["nombre"] = $nombre;
-								socket_connect($socket, $host, $puerto);
-							socket_close($socket);
-						 	header('Location: index.php');
-							}
-							else
-							{
-								?> 
-									<script language="javascript">
-									alert("Usuario o clave incorrecta");
-									</script>
-								<?php
-							}
-							break;
+				}else{
+					if($_POST['nombre']==NULL)
+						{
+						?> <script language="javascript">
+				  		alert("DEBE INGRESAR UN NOMBRE DE USUARIO");
+				  		</script>
+				  		<?php
+				  		header("refresh:1; url=index.php");
+						}
+					if($_POST['password']==NULL)
+						{	
+						?> <script language="javascript">
+				  		alert("DEBE INGRESAR UNA CONTRASEÑA");
+				  		</script>
+				  		<?php
+				  		header("refresh:1; url=index.php");
+		 				}
+					}
 			case "logout":
 
-                            $host = "localhost";
-                            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-                            $puerto = 3024;                          
-                            $salida= ' ';
-                            socket_connect($socket, $host, $puerto);
-                            socket_write($socket,$_SESSION["id"].'chao');                          
+				unset($_SESSION["nombre"]);
+				session_destroy();
+				header('refresh:0; url=index.php');
 
-                            socket_close($socket);
-
-							unset($_SESSION["nombre"]);
-							unset($_SESSION["pass"]);
-							session_destroy();
-						 	header('Location: index.php');
-							break;
-
-			default:		break;
 		}
 	}
-
 }
 
 ?>
-
 
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">

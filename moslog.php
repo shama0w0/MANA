@@ -103,8 +103,6 @@ if(!isset($_SESSION["nombre"]))
 header('Location: index.php');
 }
 ?>
-
-
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta name="keywords" content="" />
@@ -118,7 +116,37 @@ header('Location: index.php');
 <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
-
+<?php 
+if(isset($_SESSION['nombre']))
+			{ 
+			
+if(isset($_GET['borrar'])) 
+	{
+		#echo $_GET['borrar'];
+		#echo $_GET['why'];
+		
+		$consulta3 = "SELECT * FROM productos WHERE codigo='" . $_GET['borrar']. "'";	
+		$result3 = pg_query($consulta3) or die("Error query".pg_last_error() );
+		$row3 = pg_fetch_array($result3, null, PGSQL_ASSOC);	
+		
+		$fecha_hora=date("d-m-Y H:i:s");
+		
+		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
+		$consulta = "DELETE FROM productos WHERE codigo='" . $_GET['borrar']. "'";
+		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+		if ($result)
+			{
+			$consulta2 = "INSERT INTO logs (origen, nombre_user, razon, nombre_pro, codigo_pro, fecha) VALUES ('borrar_producto','" . $_SESSION["nombre"] . "','" . $_GET['why'] . "','" . $row3['nombre'] . "','" . $row3['codigo'] . "','" . $fecha_hora . "')";
+			$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
+			?> <script language="javascript">
+			alert("PRODUCTO ELIMINADO"); 
+			</script>
+			<?php
+			header("refresh:0; url=mospro.php");
+			}
+	}
+	
+?>
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -133,6 +161,7 @@ header('Location: index.php');
 				<h1><a href="index.php">Maná Impresores v2</a></h1>
 			</div>
 		</div>
+	</div>
 	</div>
 	<!-- end #header -->
 	<div id="menu-wrapper">
@@ -164,49 +193,101 @@ header('Location: index.php');
 			$('#menu').dropotron();
 		</script>
 	</div>
-		<?
-			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM productos WHERE nombre='" . $_GET['buscar']. "' OR codigo='" . $_GET['buscar']. "'";
-			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-			$row = pg_fetch_array($result, null, PGSQL_ASSOC);	
-			if($row){}
-				else
-					{
-						?> <script language="javascript">
-				  		alert("PRODUCTO NO ENCONTRADO");
-				  		</script>
-				  		<?php
-				  		header("refresh:0; url=mospro.php");					
-					}
-		?>			
+
+	&nbsp;
 	<!-- end #menu -->
 	<div id="page">
-	 <br />
-	<form name = 'mod'  method = 'POST' action='producto.php' onSubmit = 'return validar(this);'>
-			<center><tr><td><font size="+1">Nombre Producto:<br /> <?php  echo  $row['nombre']?></font></td></tr><br />
-			<br />
-			<tr>
-				<td><font size="+1">Cantidad: <?php  echo  $row['cantidad']?></font></td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td><font size="+1">Precio: <?php  echo  $row['precio']?></font></td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td><font size="+1">Codigo: <?php  echo  $row['codigo']?></font></td><br />
-			</tr>
-			<br />
-			<tr>
-				<td>
-					<font size="+1">Descripción:  <br /><?php  echo  $row['descripcion']?></font>
+
+			<TABLE width="100%"> 
+				<tr>
+					<td>
+						<h4 style="text-align:center">
+							<form method="get" action="buscar.php" >
+								Buscador: <input type="text" name="n" id="search-text" value="" />
+							</form>
+ 						</h4>
+					</td>
+					<td>
+						<form action="topdf.php" method="post" style="text-align:center">
+							<input type=image src="images/pdf.png" width="50" height="50" >
+						</form>
 					</td>
 				</tr>
-			<br />
-			</center>
-	</form>
+			</TABLE>
+			</br>
+<center>			
+<div class="CSSTableGenerator" >
+			<?php  
+			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+			$consulta = "SELECT * FROM logs";	
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );
+			$row = pg_fetch_array($result, null, PGSQL_ASSOC);		
+			?>
+                <table >
+                    <tr>
+                        <td width="70">
+                            <font size="+1">Origen</font>
+                        </td>
+                        <td width="200">
+                            <font size="+1">Usuario</font>
+                        </td>
+                        <td width="600">
+                            <font size="+1">Razon</font>
+                        </td>
+                        <td width="300">
+                            <font size="+1">Nombre_P</font>
+                        </td>
+                        <td width="300">
+                            <font size="+1">Codigo_P</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Hora y Fecha</font>
+                        </td>
+                    </tr> 
+                    <tr>
+					<?
+					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
+					?>
+                        <td >
+                            <font size="+1"><?php  echo  $row['origen']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['nombre_user']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['razon']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['nombre_pro']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['codigo_pro']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['fecha']?></font>
+                        </td>
+                    </tr>
+				<?	
+                  endwhile;  
+				?>
+                </table>
 
+            </div>
+    </center>        
+&nbsp
+<?
+#<div align="center">
+#<a href="javascript:history.go(-1)" style="text-decoration:none"><font size="+1" color="FFFFFF" >Atrás</font> </a><------><a href="moscar.php?pag=" style="text-decoration:none" ><font size="+1" color="FFFFFF">Siguiente</font></a>
+#</div>
+?>
 	</div>
 	<!-- end #page -->
 </div>
 
 <!-- end #footer -->
+<?php
+
+} else{ header("refresh:0; url=index.php");exit;} ?>
 </body>
 </html>
 

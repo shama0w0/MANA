@@ -1,10 +1,108 @@
+<?php
+$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' ";
+$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+session_start();
+
+function login()
+{	
+if(!isset($_SESSION["nombre"]))
+	{
+		?>
+		<form id="login" action="index.php?ac=login" method= "post" style="margin:0px;">
+		<b><font color="black" size="+0">Usuario: </font></b><input type="text" name="nombre" size="15"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<b><font color="black" size="+0">Contraseña: </font> <input type="password" name="password" size="10"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="submit" value="INGRESAR"/>
+		</form>
+
+		
+		<?php
+	} 
+	else{
+		?><b><font color="black" size="+0"> <?php echo "Bienvenido <b>".$_SESSION["nombre"]."</b>,   "; ?></font></b>
+		<b><font size="+0"> <?php echo " <a href=\"index.php?ac=logout\">Cerrar sesi&oacute;n</a>"; ?></font></b>
+		<? 
+		$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' ";
+		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
+		$username = $_SESSION["nombre"];
+		$query = pg_query($con,"SELECT * FROM usuarios WHERE nombre = '$username'") or die("Error consulta SQL");
+		$datapermiso = pg_fetch_array($query);
+		if($datapermiso['permisos'] == "administrador")
+			{?>
+			<form action="configadmin.php" method="post" style="text-align:center">
+				<input type=image src="images/engrana.png" width="30" height="30" >
+			</form>
+			<?php
+			}
+		}
+	if (isset($_GET['ac']))
+	{
+		switch($_GET['ac'])
+			{
+			case  "login":  
+				if($_POST['nombre']!=NULL && $_POST['password']!=NULL)
+					{
+					$username=$_POST['nombre'];
+					$password=$_POST['password'];
+					$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' ";
+					$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+					$query = pg_query($con,"SELECT nombre,clave FROM usuarios WHERE nombre = '$username'") or die("Error consulta SQL");
+					$data = pg_fetch_array($query);
+					if($data['clave'] != $password || $data['nombre']!= $username) 
+						{
+						
+						print "<script>alert('Login incorrecto. Revise que el usuario y la clave sean correctos.')</script>";
+						header("refresh:1; url=index.php"); 
+						}else{
+							$query = pg_query("SELECT nombre,clave FROM usuarios WHERE nombre = '$username'") or die(pg_last_error());
+							$row = pg_fetch_array($query);
+							$_SESSION["s_username"] = $row['nombre'];                  	
+							$_SESSION["nombre"] = $row['nombre'];
+							print "<script>alert('Has ingresado correctamente ".$_SESSION['nombre'].".')</script>"; 
+							header("refresh:0; url=index.php");
+							exit;
+							}
+
+				}else{
+					if($_POST['nombre']==NULL)
+						{
+						?> <script language="javascript">
+				  		alert("DEBE INGRESAR UN NOMBRE DE USUARIO");
+				  		</script>
+				  		<?php
+				  		header("refresh:1; url=index.php");
+						}
+					if($_POST['password']==NULL)
+						{	
+						?> <script language="javascript">
+				  		alert("DEBE INGRESAR UNA CONTRASEÑA");
+				  		</script>
+				  		<?php
+				  		header("refresh:1; url=index.php");
+		 				}
+					}
+			case "logout":
+
+				unset($_SESSION["nombre"]);
+				session_destroy();
+				header('refresh:0; url=index.php');
+
+		}
+	}
+}
+
+?>
+
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-<?php 
-$cadena = "host='localhost' dbname='b12011' user='b12011' password='baseuno' ";
-$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-session_start();?>
+<?php
+if(!isset($_SESSION["nombre"]))
+{
+header('Location: index.php');
+}
+?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta name="keywords" content="" />
@@ -22,15 +120,17 @@ session_start();?>
 if(isset($_SESSION['nombre']))
 			{ ?>
 <body>
-<div id="wrapper">
+<div id="wrapper"> 
 	<div id="header-wrapper">
 		<div id="header">
 			<center>
-		<b><font size="+0"> <?php echo "Bienvenido <b>".$_SESSION["nombre"]."</b>,   "; ?></font></b>
-		<b><font size="+0"> <?php echo " <a href=\"index.php?ac=logout\">Cerrar sesi&oacute;n</a>"; ?></font></b>
+					<?php
+						login();
+					?>
+
 			</center>
 			<div id="logo">
-				<h1><a href="index.php">Maná Impresores</a></h1>
+				<h1><a href="index.php">Maná Impresores v2</a></h1>
 			</div>
 		</div>
 	</div>
@@ -56,14 +156,28 @@ if(isset($_SESSION['nombre']))
 		</script>
 	</div>
 
-	
+	&nbsp;
 	<!-- end #menu -->
 	<div id="page">
-			 <h4 style="text-align:right">
-			<form method="get" action="buscar.php" >
-							Buscador: <input type="text" name="n" id="search-text" value="" />
-			</form>
- 			</h4>
+
+			<TABLE width="100%"> 
+				<tr>
+					<td>
+						<h4 style="text-align:center">
+							<form method="get" action="buscar.php" >
+								Buscador: <input type="text" name="n" id="search-text" value="" />
+							</form>
+ 						</h4>
+					</td>
+					<td>
+						<form action="topdf.php" method="post" style="text-align:center">
+							<input type=image src="images/pdf.png" width="50" height="50" >
+						</form>
+					</td>
+				</tr>
+			</TABLE>
+			</br>
+<center>
 <div class="CSSTableGenerator" >
                 <table >
                     <tr>
@@ -251,18 +365,16 @@ if(isset($_SESSION['nombre']))
 					
                 </table>
             </div>
-            
+ </center>           
 &nbsp
 <div align="center">
-<a href="javascript:history.go(-1)"><font size="+1">Atrás</font> </a><------><a href="moscar.php?pag="  ><font size="+1">Siguiente</font></a>
+<a href="javascript:history.go(-1)" style="text-decoration:none"><font size="+1" color="FFFFFF" >Atrás</font> </a><------><a href="moscar.php?pag=" style="text-decoration:none" ><font size="+1" color="FFFFFF">Siguiente</font></a>
 </div>
 
 	</div>
 	<!-- end #page -->
 </div>
-<div id="footer">
-	<p>2012. Sitename.com. All rights reserved. Design by <a href="http://www.freecsstemplates.org/" rel="nofollow">FreeCSSTemplates.org</a>.</p>
-</div>
+
 <!-- end #footer -->
 <?php
 

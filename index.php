@@ -9,16 +9,32 @@ if(!isset($_SESSION["nombre"]))
 	{
 		?>
 		<form id="login" action="index.php?ac=login" method= "post" style="margin:0px;">
-		<b><font size="+0">Usuario</font></b><input type="text" name="nombre" size="15"/>
-		<b><font size="+0">Contraseña</font> <input type="password" name="password" size="10"/>
-		<input type="submit" value="Login"/>
+		<b><font color="black" size="+0">Usuario: </font></b><input type="text" name="nombre" size="15"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<b><font color="black" size="+0">Contraseña: </font> <input type="password" name="password" size="10"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="submit" value="INGRESAR"/>
 		</form>
+
+		
 		<?php
 	} 
 	else{
-		?><b><font size="+0"> <?php echo "Bienvenido <b>".$_SESSION["nombre"]."</b>,   "; ?></font></b><?php
-		?><b><font size="+0"> <?php echo " <a href=\"index.php?ac=logout\">Cerrar sesi&oacute;n</a>"; ?></font></b><?php
-
+		?><b><font color="black" size="+0"> <?php echo "Bienvenido <b>".$_SESSION["nombre"]."</b>,   "; ?></font></b>
+		<b><font size="+0"> <?php echo " <a href=\"index.php?ac=logout\">Cerrar sesi&oacute;n</a>"; ?></font></b>
+		<? 
+		$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' ";
+		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
+		$username = $_SESSION["nombre"];
+		$query = pg_query($con,"SELECT * FROM usuarios WHERE nombre = '$username'") or die("Error consulta SQL");
+		$datapermiso = pg_fetch_array($query);
+		if($datapermiso['permisos'] == "administrador")
+			{?>
+			<form action="configadmin.php" method="post" style="text-align:center">
+				<input type=image src="images/engrana.png" width="30" height="30" >
+			</form>
+			<?php
+			}
 		}
 	if (isset($_GET['ac']))
 	{
@@ -43,7 +59,6 @@ if(!isset($_SESSION["nombre"]))
 							$row = pg_fetch_array($query);
 							$_SESSION["s_username"] = $row['nombre'];                  	
 							$_SESSION["nombre"] = $row['nombre'];
-							print "<script>alert('Has logueado correctamente ".$_SESSION['nombre'].".')</script>"; 
 							header("refresh:0; url=index.php");
 							exit;
 							}
@@ -105,7 +120,7 @@ if(!isset($_SESSION["nombre"]))
 
 			</center>
 			<div id="logo">
-				<h1><a href="index.php">Maná Impresores</a></h1>
+				<h1><a href="index.php">Maná Impresores v2</a></h1>
 			</div>
 		</div>
 	</div>
@@ -124,6 +139,17 @@ if(!isset($_SESSION["nombre"]))
 			<li class="first" style="text-align:right"> <a href="vender.php"><span><font size="+2">Vender</font></span> </a></li>
 			<li class="first" style="text-align:right"> <a href="carro.php"><span><font size="+2">Carro</font></span> </a></li>
 			<li class="first" style="text-align:right"> <a href="factu.php"><span><font size="+2">Facturas</font></span> </a></li>
+			<?
+			$consulta_aux = "SELECT * FROM usuarios WHERE nombre='" . $_SESSION["nombre"]. "'";	
+			$result_aux = pg_query($consulta_aux) or die("Error query".pg_last_error() );
+			$row_aux = pg_fetch_array($result_aux, null, PGSQL_ASSOC);
+			if($row_aux['permisos']=="administrador")
+				{
+				?>
+				<li class="first" style="text-align:right"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<?
+				}
+			?>
 		</ul>
 		<script type="text/javascript">
 			$('#menu').dropotron();
@@ -137,9 +163,7 @@ if(!isset($_SESSION["nombre"]))
 	</div>
 	<!-- end #page -->
 </div>
-<div id="footer">
-	<p>2013. Sitename.com. All rights reserved. Design by <a href="http://www.freecsstemplates.org/" rel="nofollow">FreeCSSTemplates.org</a>.</p>
-</div>
+&nbsp;&nbsp;
 <!-- end #footer -->
 </body>
 </html>
