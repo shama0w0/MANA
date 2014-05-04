@@ -103,12 +103,18 @@ if(!isset($_SESSION["nombre"]))
 header('Location: index.php');
 }
 ?>
+<?			
+$con_t = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+$consulta_t = "SELECT * FROM config";	
+$result_t = pg_query($consulta_t) or die("Error query".pg_last_error() );
+$row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
+?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>Maná Impresores</title>
+<title><?php  echo  $row_t['n_corto']?></title>
 	<link rel="icon" type="image/gif" href='http://200.14.84.183/~17769837/images/whutgirl11.gif' />
 
 <link href="http://fonts.googleapis.com/css?family=Abel|Arvo" rel="stylesheet" type="text/css" />
@@ -155,10 +161,9 @@ if(isset($_GET['borrar']))
 					<?php
 						login();
 					?>
-
 			</center>
 			<div id="logo">
-				<h1><a href="index.php">Maná Impresores v2</a></h1>
+				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
 			</div>
 		</div>
 	</div>
@@ -229,23 +234,39 @@ if(isset($_GET['borrar']))
 						Día: 
 						<select name=dia1>
 						<?echo "<option value='-'></option>";
-							for($i=1; $i<=31; $i++) {
-								echo "<option value=$i>$i</option>";
+							for($i=1; $i<=31; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
 								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
 						?>
 						</select> 
 						Mes: 
 						<select name=mes1>
 						<?echo "<option value='-'></option>";
-							for($i=1; $i<=12; $i++) {
-								echo "<option value=$i>$i</option>";
+							for($i=1; $i<=12; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
 								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
 						?>
 						</select>
 						Año: 
 						<select name=anio1>
 						<?echo "<option value='-'></option>";
-							for($i=1910; $i<=2099; $i++) {
+							for($i=2013; $i<=2099; $i++) {
 								echo "<option value=$i>$i</option>";
 								}
 						?>
@@ -259,23 +280,39 @@ if(isset($_GET['borrar']))
 						Día: 
 						<select name=dia2>
 						<?echo "<option value='-'></option>";
-							for($i=1; $i<=31; $i++) {
-								echo "<option value=$i>$i</option>";
+							for($i=1; $i<=31; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
 								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
 						?>
 						</select> 
 						Mes: 
 						<select name=mes2>
 						<?echo "<option value='-'></option>";
-							for($i=1; $i<=12; $i++) {
-								echo "<option value=$i>$i</option>";
+							for($i=1; $i<=12; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
 								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
 						?>
 						</select>
 						Año: 
 						<select name=anio2>
 						<?echo "<option value='-'></option>";
-							for($i=1910; $i<=2099; $i++) {
+							for($i=2013; $i<=2099; $i++) {
 								echo "<option value=$i>$i</option>";
 								}
 						?>
@@ -292,7 +329,7 @@ if(isset($_GET['borrar']))
 <div class="CSSTableGenerator" >
 			<?php  
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM logs";	
+			$consulta = "SELECT * FROM logs ORDER BY fecha desc";	
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );	
 			?>
                 <table >

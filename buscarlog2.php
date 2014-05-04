@@ -124,59 +124,6 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
-
-<?
-
-if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['cantidad_pro'])&&isset($_POST['precio_pro'])&&isset($_POST['cambio'])) 
-	{
-	if($_POST['cambio']==null||$_POST['cambio']==" "||$_POST['nombre_pro']==null||$_POST['nombre_pro']==" ")
-			{
-				?> 
-					<script language="javascript">
-					alert("EL NOMBRE O LA RAZON ESTAN VACIOS"); 
-					</script>
-				<?php
-			}else
-				{
-			if(is_numeric($_POST['cantidad_pro'])&&is_numeric($_POST['precio_pro'])) 
-					{
-			
-					if($_POST['descripcion_pro']==null||$_POST['descripcion_pro']==" ")
-						{
-						$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
-						$result = pg_query($consulta) or die("Error query".pg_last_error() );
-						?> <script language="javascript">
-						alert("PRODUCTO MODIFICADO"); 
-						</script>
-						<?php					
-						}
-						else
-							{
-							$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "', descripcion='" . pg_escape_string ($_POST['descripcion_pro']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
-							$result = pg_query($consulta) or die("Error query".pg_last_error() );
-							?> <script language="javascript">
-							alert("PRODUCTO MODIFICADO"); 
-							</script>
-							<?php	
-							}
-							$fecha_hora=date("d-m-Y H:i:s");
-							$consulta2 = "INSERT INTO logs (origen, nombre_user, razon, nombre_pro, codigo_pro, fecha) VALUES ('modificar_producto','" . $_SESSION["nombre"] . "','" . $_POST['cambio'] . "','" . $_POST['nombre_pro'] . "','" . $_POST['codigo_pro'] . "','" . $fecha_hora . "')";
-							$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
-					
-					}
-					else
-						{
-						?> 
-							<script language="javascript">
-							alert("CANTIDAD Y PRECIO DEBEN SER NUMEROS"); 
-							</script>
-						<?php
-						}
-				}
-	}
-
-?>
-
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -222,51 +169,217 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 		</script>
 	</div>
 		<?
+		if($_POST['dia1']!="-"&&$_POST['mes1']!="-"&&$_POST['anio1']!="-"&&$_POST['dia2']!="-"&&$_POST['mes2']!="-"&&$_POST['anio2']!="-")
+		{
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			if(isset($_GET['codigo_pro']))
-				{
-				$consulta = "SELECT * FROM productos WHERE codigo='" . $_GET['codigo_pro']. "'";
+			$consulta = "SELECT * FROM logs WHERE fecha BETWEEN '".$_POST['dia1']."".$_POST['mes1']."".$_POST['anio1']." 00:00' AND '".$_POST['dia2']."".$_POST['mes2']."".$_POST['anio2']." 23:59'";
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );
+			$rowaux = pg_fetch_array($result, null, PGSQL_ASSOC);	
+			if($rowaux){
+				$consulta = "SELECT * FROM logs WHERE fecha BETWEEN '".$_POST['dia1']."".$_POST['mes1']."".$_POST['anio1']." 00:00' AND '".$_POST['dia2']."".$_POST['mes2']."".$_POST['anio2']." 23:59' ORDER BY fecha desc";
+				$result = pg_query($consulta) or die("Error query".pg_last_error() );
 				}
 				else
 					{
-					$consulta = "SELECT * FROM productos WHERE codigo='" . $_POST['codigo_pro']. "'";	
+						?> <script language="javascript">
+				  		alert("LOG NO ENCONTRADO");
+				  		</script>
+				  		<?php
+				  		header("refresh:0; url=moslog.php");					
 					}
-			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-			$row = pg_fetch_array($result, null, PGSQL_ASSOC);	
-		?>			
+
+		?>	
+	&nbsp;		
 	<!-- end #menu -->
+
 	<div id="page">
-	 <center>Los campos marcados con un * son obligatorios. Ademas, si desea hacer un cambio en el producto debe especificar la razon del cambio.</center>
+	<center>
+		<td>
+			<h4 style="text-align:center">
+				<form method="get" action="buscarlog.php" >
+					Buscador de Logs: <input type="text" name="buscar" id="search-text" value="" />
+				</form>
+ 				</h4>
+		</td>
+	<center>
+	<h4 style="text-align:center">
+				<form method="post" action="buscarlog2.php" >
+	&nbsp;&nbsp;
+			Fecha de Inicio:
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				
+			Fecha de Termino:
+						<br>
+						Día: 
+						<select name=dia1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select>
+						Año: 
+						<select name=anio1>
+						<?echo "<option value='-'></option>";
+							for($i=2013; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+						y
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+									
+						Día: 
+						<select name=dia2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select>
+						Año: 
+						<select name=anio2>
+						<?echo "<option value='-'></option>";
+							for($i=2013; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>			
+						
+						</td>
+				</br>
+				<input type="submit" style="width:160px; height:30px; font-size:12pt" name="buscarlog" value="Buscar por Fecha">			
+			</form>
+ 	</h4>
+	
+	<hr style="color: #FFFFFF;" />
 	 <br />
-	<form name = 'mod'  method = 'POST' action='producto.php' onSubmit = 'return validar(this);'>
-			<center><tr><td><font size="+1">*Nombre Producto:</font><br /> </td><td><input type='text' name='nombre_pro' size=100 MAXLENGTH=200 value='<?php  echo  $row['nombre']?>' /></td></tr><br />
-			<br />
-			<tr>
-				<td><font size="+1">*Cantidad:</font><input type='text' name='cantidad_pro' MAXLENGTH=10 value='<?php  echo  $row['cantidad']?>'/></td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td><font size="+1">*Precio:</font><input type='text' name='precio_pro' MAXLENGTH=10 value='<?php  echo  $row['precio']?>'/></td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td><font size="+1">Codigo: <?php  echo  $row['codigo']?></td></font><br />
-				<input type="hidden" name="codigo_pro" value=<?php  echo  $row['codigo']?> />
-			</tr>
-			<br />
-			<tr>
-				<td>
-					<font size="+1">Descripción: </font> <br /><textarea rows="4" cols="80" name="descripcion_pro" MAXLENGTH=1000 ><?php  echo  $row['descripcion']?></textarea>
-					</td>
-				</tr>
-			<br />
-<tr><td><font size="+1">*Razon del Cambio: </font> <br /> <textarea rows="4" cols="60" name="cambio" MAXLENGTH=1000 ></textarea></td></tr><br />			
-			<tr><td><input type="submit" value="Modificar"></td></tr>
-			<tr><td><input type="reset" value="Reset"></td></tr>
-			</center>
-	</form>
+<center>			
+<div class="CSSTableGenerator" >
+                <table >
+                    <tr>
+                        <td width="70">
+                            <font size="+1">Origen</font>
+                        </td>
+                        <td width="200">
+                            <font size="+1">Usuario</font>
+                        </td>
+                        <td width="600">
+                            <font size="+1">Razón</font>
+                        </td>
+                        <td width="300">
+                            <font size="+1">Nombre_P</font>
+                        </td>
+                        <td width="300">
+                            <font size="+1">Codigo_P</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Hora y Fecha</font>
+                        </td>
+                    </tr> 
+                    <tr>
+					<?
+					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
+					?>
+                        <td >
+                            <font size="+1"><?php  echo  $row['origen']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['nombre_user']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['razon']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['nombre_pro']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['codigo_pro']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['fecha']?></font>
+                        </td>
+                    </tr>
+				<?	
+                  endwhile;  
+				?>
+                </table>
+
+            </div>
+    </center>        
+&nbsp
 
 	</div>
 	<!-- end #page -->
 </div>
 
 <!-- end #footer -->
-</body>
+</body>		
+<?
+	}
+	else
+		{
+			?> <script language="javascript">
+			alert("DEBE INGRESAR AMBAS FECHAS COMPLETAS");
+			</script>
+			<?php
+			header("refresh:0; url=moslog.php");					
+		}
+?>
 </html>
 

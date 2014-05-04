@@ -103,12 +103,18 @@ if(!isset($_SESSION["nombre"]))
 header('Location: index.php');
 }
 ?>
+<?			
+$con_t = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+$consulta_t = "SELECT * FROM config";	
+$result_t = pg_query($consulta_t) or die("Error query".pg_last_error() );
+$row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
+?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>Maná Impresores</title>
+<title><?php  echo  $row_t['n_corto']?></title>
 	<link rel="icon" type="image/gif" href='http://200.14.84.183/~17769837/images/whutgirl11.gif' />
 
 <link href="http://fonts.googleapis.com/css?family=Abel|Arvo" rel="stylesheet" type="text/css" />
@@ -127,10 +133,9 @@ if(isset($_SESSION['nombre']))
 					<?php
 						login();
 					?>
-
 			</center>
 			<div id="logo">
-				<h1><a href="index.php">Maná Impresores v2</a></h1>
+				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
 			</div>
 		</div>
 	</div>
@@ -148,7 +153,17 @@ if(isset($_SESSION['nombre']))
 			<li class="first" style="text-align:right"> <a href="vender.php"><span><font size="+2">Vender</font></span> </a></li>
 			<li class="first" style="text-align:right"> <a href="carro.php"><span><font size="+2">Carro</font></span> </a></li>
 			<li class="first" style="text-align:right"> <a href="factu.php"><span><font size="+2">Facturas</font></span> </a></li>
-
+			<?
+			$consulta_aux = "SELECT * FROM usuarios WHERE nombre='" . $_SESSION["nombre"]. "'";	
+			$result_aux = pg_query($consulta_aux) or die("Error query".pg_last_error() );
+			$row_aux = pg_fetch_array($result_aux, null, PGSQL_ASSOC);
+			if($row_aux['permisos']=="administrador")
+				{
+				?>
+				<li class="first" style="text-align:right"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<?
+				}
+			?>
 
 		</ul>
 		<script type="text/javascript">

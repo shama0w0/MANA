@@ -92,6 +92,28 @@ if(!isset($_SESSION["nombre"]))
 	}
 }
 
+
+
+if(isset($_POST['nombre_corto'])&&isset($_POST['nombre_completo'])&&isset($_POST['direccion'])&&isset($_POST['iva'])&&isset($_POST['pagos'])) 
+	{
+	if($_POST['nombre_corto']==null||$_POST['nombre_corto']==" "||$_POST['nombre_completo']==null||$_POST['nombre_completo']==" "||$_POST['direccion']==null||$_POST['direccion']==" "||$_POST['iva']==null||$_POST['iva']==" "||$_POST['pagos']==null||$_POST['pagos']==" ")
+			{
+				?> 
+					<script language="javascript">
+					alert("LOS CAMPOS CON UN * SON OBLIGATORIOS"); 
+					</script>
+				<?php
+			}else
+				{
+						$consulta = "UPDATE config SET ruta='" . pg_escape_string ($_POST['ruta']) . "', n_completo='" . pg_escape_string ($_POST['nombre_completo']) . "', n_corto='" . pg_escape_string ($_POST['nombre_corto']) . "', direccion='" . pg_escape_string ($_POST['direccion']) . "', rubro='" . pg_escape_string ($_POST['rubro']) . "', sucursales='" . pg_escape_string ($_POST['t_sucursales']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_s']) . "', iva='" . pg_escape_string ($_POST['iva']) . "', tipos_pago='" . pg_escape_string ($_POST['pagos']) . "'";	
+						$result = pg_query($consulta) or die("Error query".pg_last_error() );
+						?> <script language="javascript">
+						alert("CONFIGURACION MODIFICADA"); 
+						</script>
+						<?php					
+				}
+	}
+
 ?>
 
 
@@ -103,8 +125,6 @@ if(!isset($_SESSION["nombre"]))
 header('Location: index.php');
 }
 ?>
-
-
 <?			
 $con_t = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 $consulta_t = "SELECT * FROM config";	
@@ -124,59 +144,10 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
-
-<?
-
-if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['cantidad_pro'])&&isset($_POST['precio_pro'])&&isset($_POST['cambio'])) 
-	{
-	if($_POST['cambio']==null||$_POST['cambio']==" "||$_POST['nombre_pro']==null||$_POST['nombre_pro']==" ")
-			{
-				?> 
-					<script language="javascript">
-					alert("EL NOMBRE O LA RAZON ESTAN VACIOS"); 
-					</script>
-				<?php
-			}else
-				{
-			if(is_numeric($_POST['cantidad_pro'])&&is_numeric($_POST['precio_pro'])) 
-					{
-			
-					if($_POST['descripcion_pro']==null||$_POST['descripcion_pro']==" ")
-						{
-						$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
-						$result = pg_query($consulta) or die("Error query".pg_last_error() );
-						?> <script language="javascript">
-						alert("PRODUCTO MODIFICADO"); 
-						</script>
-						<?php					
-						}
-						else
-							{
-							$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "', descripcion='" . pg_escape_string ($_POST['descripcion_pro']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
-							$result = pg_query($consulta) or die("Error query".pg_last_error() );
-							?> <script language="javascript">
-							alert("PRODUCTO MODIFICADO"); 
-							</script>
-							<?php	
-							}
-							$fecha_hora=date("d-m-Y H:i:s");
-							$consulta2 = "INSERT INTO logs (origen, nombre_user, razon, nombre_pro, codigo_pro, fecha) VALUES ('modificar_producto','" . $_SESSION["nombre"] . "','" . $_POST['cambio'] . "','" . $_POST['nombre_pro'] . "','" . $_POST['codigo_pro'] . "','" . $fecha_hora . "')";
-							$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
-					
-					}
-					else
-						{
-						?> 
-							<script language="javascript">
-							alert("CANTIDAD Y PRECIO DEBEN SER NUMEROS"); 
-							</script>
-						<?php
-						}
-				}
-	}
-
+<?php 
+if(isset($_SESSION['nombre']))
+			{ 
 ?>
-
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -190,6 +161,7 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
 			</div>
 		</div>
+	</div>
 	</div>
 	<!-- end #header -->
 	<div id="menu-wrapper">
@@ -223,50 +195,89 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 	</div>
 		<?
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			if(isset($_GET['codigo_pro']))
-				{
-				$consulta = "SELECT * FROM productos WHERE codigo='" . $_GET['codigo_pro']. "'";
-				}
-				else
-					{
-					$consulta = "SELECT * FROM productos WHERE codigo='" . $_POST['codigo_pro']. "'";	
-					}
+			$consulta = "SELECT * FROM config";
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );
 			$row = pg_fetch_array($result, null, PGSQL_ASSOC);	
-		?>			
+		?>	
+	&nbsp;
 	<!-- end #menu -->
 	<div id="page">
-	 <center>Los campos marcados con un * son obligatorios. Ademas, si desea hacer un cambio en el producto debe especificar la razon del cambio.</center>
-	 <br />
-	<form name = 'mod'  method = 'POST' action='producto.php' onSubmit = 'return validar(this);'>
-			<center><tr><td><font size="+1">*Nombre Producto:</font><br /> </td><td><input type='text' name='nombre_pro' size=100 MAXLENGTH=200 value='<?php  echo  $row['nombre']?>' /></td></tr><br />
-			<br />
+			<center><?echo "CONFIGURACIÓN MAESTRA"?></center>
+			<hr style="color: #FFFFFF;" />
+			</br>
+	<center>			
+	<form name = 'mod'  method = 'POST' action='configadmin.php' onSubmit = 'return validar(this);'>
 			<tr>
-				<td><font size="+1">*Cantidad:</font><input type='text' name='cantidad_pro' MAXLENGTH=10 value='<?php  echo  $row['cantidad']?>'/></td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td><font size="+1">*Precio:</font><input type='text' name='precio_pro' MAXLENGTH=10 value='<?php  echo  $row['precio']?>'/></td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td><font size="+1">Codigo: <?php  echo  $row['codigo']?></td></font><br />
-				<input type="hidden" name="codigo_pro" value=<?php  echo  $row['codigo']?> />
+				<td>
+					<font size="+1">*Razon Social:</font><br /> </td><td><input type='text' name='nombre_completo' size=100 MAXLENGTH=100 value='<?php  echo  $row['n_completo']?>' />
+				</td>
 			</tr>
+			<br />
 			<br />
 			<tr>
 				<td>
-					<font size="+1">Descripción: </font> <br /><textarea rows="4" cols="80" name="descripcion_pro" MAXLENGTH=1000 ><?php  echo  $row['descripcion']?></textarea>
-					</td>
-				</tr>
+					<font size="+1">Ruta: </font><input type='text' name='ruta' MAXLENGTH=25 value='<?php  echo  $row['ruta']?>'/>
+				</td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td>
+					<font size="+1">*Nombre Corto: </font><input type='text' name='nombre_corto' MAXLENGTH=20 value='<?php  echo  $row['n_corto']?>'/>
+				</td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+			</tr>
 			<br />
-<tr><td><font size="+1">*Razon del Cambio: </font> <br /> <textarea rows="4" cols="60" name="cambio" MAXLENGTH=1000 ></textarea></td></tr><br />			
-			<tr><td><input type="submit" value="Modificar"></td></tr>
-			<tr><td><input type="reset" value="Reset"></td></tr>
-			</center>
+			<br />
+			<tr>
+				<td>
+					<font size="+1">*Dirección:</font><br /> </td><td><input type='text' name='direccion' size=100 MAXLENGTH=150 value='<?php  echo  $row['direccion']?>' />
+				</td>
+			</tr>
+			<br />
+			<br />
+			<tr>
+				<td>
+					<font size="+1">Rubro: </font><input type='text' name='rubro' size=30 MAXLENGTH=75 value='<?php  echo  $row['rubro']?>'/>
+				</td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td>
+					<font size="+1">¿Tiene Sucursales?: </font><input type='text' name='t_sucursales' size=10 MAXLENGTH=2 value='<?php  echo  $row['sucursales']?>'/>
+				</td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td>
+					<font size="+1">Cantidad de Sucursales: </font><input type='text' name='cantidad_s' MAXLENGTH=20 value='<?php  echo  $row['cantidad']?>'/>
+				</td>
+			</tr>			
+			<br />
+			<br />
+			<tr>
+				<td>
+					<font size="+1">*IVA:</font></td><td><input type='text' name='iva' size=10 MAXLENGTH=5 value='<?php  echo  $row['iva']?>' />
+				</td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td>
+					<font size="+1">*Tipos de Pago: </font><input type='text' name='pagos' size=100 MAXLENGTH=100 value='<?php  echo  $row['tipos_pago']?>'/>
+				</td>
+			</tr>			
+			<br />
+			<br />		
+			<tr><td><input type="submit" value="MODIFICAR"></td></tr>
+			<tr><td><input type="reset" value="RESET"></td></tr>
+			
 	</form>
-
+    </center>        
+&nbsp
+<?
+#<div align="center">
+#<a href="javascript:history.go(-1)" style="text-decoration:none"><font size="+1" color="FFFFFF" >Atrás</font> </a><------><a href="moscar.php?pag=" style="text-decoration:none" ><font size="+1" color="FFFFFF">Siguiente</font></a>
+#</div>
+?>
 	</div>
 	<!-- end #page -->
 </div>
 
 <!-- end #footer -->
+<?php
+
+} else{ header("refresh:0; url=index.php");exit;} ?>
 </body>
 </html>
 
