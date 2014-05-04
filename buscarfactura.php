@@ -168,11 +168,7 @@ header('Location: index.php');
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 			$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%'";
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-			$rowaux = pg_fetch_array($result, null, PGSQL_ASSOC);	
-			if($rowaux){
-				$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%' ORDER BY codigo" ;
-				$result = pg_query($consulta) or die("Error query".pg_last_error() );
-				}
+			if($result){}
 				else
 					{
 						?> <script language="javascript">
@@ -181,7 +177,8 @@ header('Location: index.php');
 				  		<?php
 				  		header("refresh:0; url=mospro.php");					
 					}
-		?>			
+		?>	
+	&nbsp;		
 	<!-- end #menu -->
 
 	<div id="page">

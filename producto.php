@@ -231,7 +231,7 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 		?>			
 	<!-- end #menu -->
 	<div id="page">
-	 <center>Los campos marcados con un * son obligatorios y si desea hacer un cambio en el producto debe especificar la razon del cambio</center>
+	 <center>Los campos marcados con un * son obligatorios. Ademas, si desea hacer un cambio en el producto debe especificar la razon del cambio.</center>
 	 <br />
 	<form name = 'mod'  method = 'POST' action='producto.php' onSubmit = 'return validar(this);'>
 			<center><tr><td><font size="+1">*Nombre Producto:</font><br /> </td><td><input type='text' name='nombre_pro' size=100 MAXLENGTH=200 value='<?php  echo  $row['nombre']?>' /></td></tr><br />

@@ -166,57 +166,131 @@ header('Location: index.php');
 	</div>
 		<?
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%'";
+			$consulta = "SELECT * FROM logs WHERE origen LIKE '%" . $_GET['buscar']. "%' OR nombre_user LIKE '%" . $_GET['buscar']. "%' OR nombre_pro LIKE '%" . $_GET['buscar']. "%' OR codigo_pro LIKE '%" . $_GET['buscar']. "%'";
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );
 			$rowaux = pg_fetch_array($result, null, PGSQL_ASSOC);	
 			if($rowaux){
-				$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%' ORDER BY codigo" ;
+				$consulta = "SELECT * FROM logs WHERE origen LIKE '%" . $_GET['buscar']. "%' OR nombre_user LIKE '%" . $_GET['buscar']. "%' OR nombre_pro LIKE '%" . $_GET['buscar']. "%' OR codigo_pro LIKE '%" . $_GET['buscar']. "%' ORDER BY fecha";
 				$result = pg_query($consulta) or die("Error query".pg_last_error() );
 				}
 				else
 					{
 						?> <script language="javascript">
-				  		alert("PRODUCTO NO ENCONTRADO");
+				  		alert("LOG NO ENCONTRADO");
 				  		</script>
 				  		<?php
-				  		header("refresh:0; url=mospro.php");					
+				  		header("refresh:0; url=moslog.php");					
 					}
-		?>			
+		?>	
+	&nbsp;		
 	<!-- end #menu -->
 
 	<div id="page">
 	<center>
 		<td>
 			<h4 style="text-align:center">
-				<form method="get" action="buscar.php" >
-					Buscador de Productos: <input type="text" name="buscar" id="search-text" value="" />
+				<form method="get" action="buscarlog.php" >
+					Buscador de Logs: <input type="text" name="buscar" id="search-text" value="" />
 				</form>
  				</h4>
 		</td>
 	<center>
+	<h4 style="text-align:center">
+				<form method="post" action="buscarlog2.php" >
+	&nbsp;&nbsp;
+			Fecha de Inicio:
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				
+			Fecha de Termino:
+						<br>
+						Día: 
+						<select name=dia1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						Año: 
+						<select name=anio1>
+						<?echo "<option value='-'></option>";
+							for($i=1910; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+						y
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+									
+						Día: 
+						<select name=dia2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						Año: 
+						<select name=anio2>
+						<?echo "<option value='-'></option>";
+							for($i=1910; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>			
+						
+						</td>
+				</br>
+				<input type="submit" style="width:160px; height:30px; font-size:12pt" name="buscarlog" value="Buscar por Fecha">			
+			</form>
+ 	</h4>
+	
 	<hr style="color: #FFFFFF;" />
 	 <br />
 <center>			
 <div class="CSSTableGenerator" >
-			<?php  	
-	
-			?>
-                         <table >
+                <table >
                     <tr>
                         <td width="70">
-                            <font size="+1">Codigo</font>
+                            <font size="+1">Origen</font>
                         </td>
-                        <td width="620">
-                            <font size="+1">Nombre producto</font>
+                        <td width="200">
+                            <font size="+1">Usuario</font>
                         </td>
-                        <td width="30">
-                            <font size="+1">Cantidad</font>
+                        <td width="600">
+                            <font size="+1">Razón</font>
                         </td>
-						<td width="30">
-                            <font size="+1">Precio</font>
+                        <td width="300">
+                            <font size="+1">Nombre_P</font>
                         </td>
-                        <td width="150">
-                            <font size="+1">Opciones</font>
+                        <td width="300">
+                            <font size="+1">Codigo_P</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Hora y Fecha</font>
                         </td>
                     </tr> 
                     <tr>
@@ -224,37 +298,23 @@ header('Location: index.php');
 					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
 					?>
                         <td >
-                            <font size="+1"><?php  echo  $row['codigo']?></font>
+                            <font size="+1"><?php  echo  $row['origen']?></font>
                         </td>
                         <td >
-                            <font size="+1"><?php  echo  $row['nombre']?></font>
-                        </td>
-						<td>
-                            <font size="+1"><?php  echo  $row['precio']?></font> 
+                            <font size="+1"><?php  echo  $row['nombre_user']?></font>
                         </td>
                         <td>
-                            <font size="+1"><?php  echo  $row['cantidad']?></font>
+                            <font size="+1"><?php  echo  $row['razon']?></font>
                         </td>
-
-                        <td width="70">
-                        
-						 <center>
-                          <input type="button" value="Ver" onClick="location='producto.php?codigo_pro=<?php echo $row["codigo"];?>'">
-						  <input name="eliminar" type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
-						    if(strRazon!=null && strRazon!='')
-						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar este producto?')) location='mospro.php?borrar=<?php echo $row["codigo"];?>&why='+strRazon
-						               }
-						               else
-						                    {
-						                    if(strRazon==''){
-						                    alert('Debe ingresar una razon');}
-						                    }
-						  ">
-						  
-                         </center>
-						</td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['nombre_pro']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['codigo_pro']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['fecha']?></font>
+                        </td>
                     </tr>
 				<?	
                   endwhile;  

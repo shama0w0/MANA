@@ -202,26 +202,98 @@ if(isset($_GET['borrar']))
 				<tr>
 					<td>
 						<h4 style="text-align:center">
-							<form method="get" action="buscar.php" >
-								Buscador: <input type="text" name="n" id="search-text" value="" />
+							<form method="get" action="buscarlog.php" >
+								Buscador: <input type="text" name="buscar" id="search-text" value="" />
 							</form>
  						</h4>
 					</td>
 					<td>
-						<form action="topdf.php" method="post" style="text-align:center">
+						<form action="logtopdf.php" method="post" style="text-align:center">
 							<input type=image src="images/pdf.png" width="50" height="50" >
 						</form>
 					</td>
 				</tr>
 			</TABLE>
+<h4 style="text-align:center">
+				<form method="post" action="buscarlog2.php" >
+	&nbsp;&nbsp;
+			Fecha de Inicio:
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				
+			Fecha de Termino:
+						<br>
+						Día: 
+						<select name=dia1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						Año: 
+						<select name=anio1>
+						<?echo "<option value='-'></option>";
+							for($i=1910; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+						y
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+									
+						Día: 
+						<select name=dia2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						Año: 
+						<select name=anio2>
+						<?echo "<option value='-'></option>";
+							for($i=1910; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>			
+						
+						</td>
+				</br>			
+				<input type="submit" style="width:160px; height:30px; font-size:12pt" name="buscarlog" value="Buscar por Fecha">			
+			</form>
+ 	</h4>
+			<hr style="color: #FFFFFF;" />
 			</br>
 <center>			
 <div class="CSSTableGenerator" >
 			<?php  
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 			$consulta = "SELECT * FROM logs";	
-			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-			$row = pg_fetch_array($result, null, PGSQL_ASSOC);		
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );	
 			?>
                 <table >
                     <tr>
@@ -232,7 +304,7 @@ if(isset($_GET['borrar']))
                             <font size="+1">Usuario</font>
                         </td>
                         <td width="600">
-                            <font size="+1">Razon</font>
+                            <font size="+1">Razón</font>
                         </td>
                         <td width="300">
                             <font size="+1">Nombre_P</font>

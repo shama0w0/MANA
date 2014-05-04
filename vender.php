@@ -161,9 +161,10 @@ if(isset($_SESSION['nombre']))
 	<div id="page">
 			 <h4 style="text-align:center">
 			<form method="get" action="buscar.php" >
-							Buscador: <input type="text" name="n" id="search-text" value="" />
+							Buscador de Productos: <input type="text" name="n" id="search-text" value="" />
 			</form>
  			</h4>
+			<hr style="color: #FFFFFF;" />
 </br>
 <center>
 <div class="CSSTableGenerator" >

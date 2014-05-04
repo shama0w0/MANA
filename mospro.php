@@ -202,23 +202,24 @@ if(isset($_GET['borrar']))
 					<td>
 						<h4 style="text-align:center">
 							<form method="get" action="buscar.php" >
-								Buscador: <input type="text" name="buscar" id="search-text" value="" />
+								Buscador de Productos: <input type="text" name="buscar" id="search-text" value="" />
 							</form>
  						</h4>
 					</td>
 					<td>
-						<form action="topdf.php" method="post" style="text-align:center">
+						<form action="prodtopdf.php" method="post" style="text-align:center">
 							<input type=image src="images/pdf.png" width="50" height="50" >
 						</form>
 					</td>
 				</tr>
 			</TABLE>
+			<hr style="color: #FFFFFF;" />
 			</br>
 <center>			
 <div class="CSSTableGenerator" >
 			<?php  
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM productos";	
+			$consulta = "SELECT * FROM productos ORDER BY codigo";	
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );
 	
 			?>
