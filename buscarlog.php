@@ -30,11 +30,18 @@ if(!isset($_SESSION["nombre"]))
 		$datapermiso = pg_fetch_array($query);
 		if($datapermiso['permisos'] == "administrador")
 			{?>
+
 			<form action="configadmin.php" method="post" style="text-align:center">
 				<input type=image src="images/engrana.png" width="30" height="30" >
 			</form>
 			<?php
 			}
+		?>	
+		<form action="carro.php" method="post" style="text-align:right">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
+
+		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -148,7 +155,7 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 				</ul>
 			</li>
 			<li class="first" style="text-align:right"> <a href="vender.php"><span><font size="+2">Vender</font></span> </a></li>
-			<li class="first" style="text-align:right"> <a href="carro.php"><span><font size="+2">Carro</font></span> </a></li>
+			<li class="first" style="text-align:right"> <a href="clientes.php"><span><font size="+2">Clientes</font></span> </a></li>
 			<li class="first" style="text-align:right"> <a href="factu.php"><span><font size="+2">Facturas</font></span> </a></li>
 			<?
 			$consulta_aux = "SELECT * FROM usuarios WHERE nombre='" . $_SESSION["nombre"]. "'";	
@@ -157,7 +164,7 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			if($row_aux['permisos']=="administrador")
 				{
 				?>
-				<li class="first" style="text-align:right"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<li class="first" style="float: right;"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
 				<?
 				}
 			?>
@@ -180,7 +187,15 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 	<!-- end #menu -->
 
 	<div id="page">
-
+	<center>
+		<td>
+			<h4 style="text-align:center">
+				<form method="get" action="buscarlog.php" >
+					Buscador de Logs: <input type="text" name="buscar" id="search-text" value="" />
+				</form>
+ 				</h4>
+		</td>
+	<center>&nbsp;
 	<h4 style="text-align:center">
 				<form method="post" action="buscarlog2.php" >
 	&nbsp;&nbsp;
@@ -304,10 +319,10 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
                         <td width="300">
                             <font size="+1">Nombre_P</font>
                         </td>
-                        <td width="300">
+                        <td width="150">
                             <font size="+1">Codigo_P</font>
                         </td>
-                        <td width="100">
+                        <td width="200">
                             <font size="+1">Hora y Fecha</font>
                         </td>
                     </tr> 

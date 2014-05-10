@@ -131,6 +131,21 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
+
+<?
+
+if(isset($_POST['nombre_usr'])||isset($_POST['clave_usr'])||isset($_POST['nombre_r_user'])||isset($_POST['telefono_usr'])||isset($_POST['direccion_usr'])) 
+	{
+		$consulta = "UPDATE usuarios SET nombre='".pg_escape_string ($_POST['nombre_usr'])."', clave='".pg_escape_string ($_POST['clave_usr']) ."', nombre_r='".pg_escape_string ($_POST['nombre_r_user'])."', telefono='".pg_escape_string ($_POST['telefono_usr'])."', direccion='".pg_escape_string ($_POST['direccion_usr'])."' WHERE num='".$_POST['num_usr']."'";	
+		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+		?> <script language="javascript">
+		alert("USUARIO MODIFICADO"); 
+		</script>
+		<?php					
+	}
+
+?>
+
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -165,7 +180,7 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			if($row_aux['permisos']=="administrador")
 				{
 				?>
-				<li class="first" style="float: right;""> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<li class="first" style="float: right;"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
 				<?
 				}
 			?>
@@ -176,217 +191,47 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 		</script>
 	</div>
 		<?
-		if($_POST['dia1']!="-"&&$_POST['mes1']!="-"&&$_POST['anio1']!="-"&&$_POST['dia2']!="-"&&$_POST['mes2']!="-"&&$_POST['anio2']!="-")
-		{
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM logs WHERE fecha BETWEEN '".$_POST['dia1']."".$_POST['mes1']."".$_POST['anio1']." 00:00' AND '".$_POST['dia2']."".$_POST['mes2']."".$_POST['anio2']." 23:59'";
-			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-			$rowaux = pg_fetch_array($result, null, PGSQL_ASSOC);	
-			if($rowaux){
-				$consulta = "SELECT * FROM logs WHERE fecha BETWEEN '".$_POST['dia1']."".$_POST['mes1']."".$_POST['anio1']." 00:00' AND '".$_POST['dia2']."".$_POST['mes2']."".$_POST['anio2']." 23:59' ORDER BY fecha desc";
-				$result = pg_query($consulta) or die("Error query".pg_last_error() );
+			if(isset($_GET['num_usr']))
+				{
+				$consulta = "SELECT * FROM usuarios WHERE num='" . $_GET['num_usr']. "'";
 				}
 				else
 					{
-						?> <script language="javascript">
-				  		alert("LOG NO ENCONTRADO");
-				  		</script>
-				  		<?php
-				  		header("refresh:0; url=moslog.php");					
+					$consulta = "SELECT * FROM usuarios WHERE num='" . $_POST['num_usr']. "'";	
 					}
-
-		?>	
-	&nbsp;		
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );
+			$row = pg_fetch_array($result, null, PGSQL_ASSOC);	
+		?>			
 	<!-- end #menu -->
-
 	<div id="page">
-	<center>
-		<td>
-			<h4 style="text-align:center">
-				<form method="get" action="buscarlog.php" >
-					Buscador de Logs: <input type="text" name="buscar" id="search-text" value="" />
-				</form>
- 				</h4>
-		</td>
-	<center>
-	<h4 style="text-align:center">
-				<form method="post" action="buscarlog2.php" >
-	&nbsp;&nbsp;
-			Fecha de Inicio:
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				
-			Fecha de Termino:
-						<br>
-						Día: 
-						<select name=dia1>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=31; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select> 
-						Mes: 
-						<select name=mes1>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=12; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select>
-						Año: 
-						<select name=anio1>
-						<?echo "<option value='-'></option>";
-							for($i=2013; $i<=2099; $i++) {
-								echo "<option value=$i>$i</option>";
-								}
-						?>
-						</select>
-						&nbsp;&nbsp;
-						&nbsp;&nbsp;
-						y
-						&nbsp;&nbsp;
-						&nbsp;&nbsp;
-									
-						Día: 
-						<select name=dia2>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=31; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select> 
-						Mes: 
-						<select name=mes2>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=12; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select>
-						Año: 
-						<select name=anio2>
-						<?echo "<option value='-'></option>";
-							for($i=2013; $i<=2099; $i++) {
-								echo "<option value=$i>$i</option>";
-								}
-						?>
-						</select>			
-						
-						</td>
-				</br>
-				<input type="submit" style="width:160px; height:30px; font-size:12pt" name="buscarlog" value="Buscar por Fecha">			
-			</form>
- 	</h4>
-	
-	<hr style="color: #FFFFFF;" />
 	 <br />
-<center>			
-<div class="CSSTableGenerator" >
-                <table >
-                    <tr>
-                        <td width="70">
-                            <font size="+1">Origen</font>
-                        </td>
-                        <td width="200">
-                            <font size="+1">Usuario</font>
-                        </td>
-                        <td width="600">
-                            <font size="+1">Razón</font>
-                        </td>
-                        <td width="300">
-                            <font size="+1">Nombre_P</font>
-                        </td>
-                        <td width="150">
-                            <font size="+1">Codigo_P</font>
-                        </td>
-                        <td width="200">
-                            <font size="+1">Hora y Fecha</font>
-                        </td>
-                    </tr> 
-                    <tr>
-					<?
-					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
-					?>
-                        <td >
-                            <font size="+1"><?php  echo  $row['origen']?></font>
-                        </td>
-                        <td >
-                            <font size="+1"><?php  echo  $row['nombre_user']?></font>
-                        </td>
-                        <td>
-                            <font size="+1"><?php  echo  $row['razon']?></font>
-                        </td>
-                        <td >
-                            <font size="+1"><?php  echo  $row['nombre_pro']?></font>
-                        </td>
-                        <td >
-                            <font size="+1"><?php  echo  $row['codigo_pro']?></font>
-                        </td>
-                        <td>
-                            <font size="+1"><?php  echo  $row['fecha']?></font>
-                        </td>
-                    </tr>
-				<?	
-                  endwhile;  
-				?>
-                </table>
-
-            </div>
-    </center>        
-&nbsp
+	<form name = 'mod'  method = 'POST' action='usuario.php' onSubmit = 'return validar(this);'>
+			<center><tr><td><font size="+1">Nombre Real:</font><br /> </td><td><input type='text' name='nombre_r_user' size=100 MAXLENGTH=100 value='<?php  echo  $row['nombre_r']?>' /></td></tr><br />
+			<br />
+			<tr>
+				<td><font size="+1">Nombre Usuario:</font><input type='text' name='nombre_usr' MAXLENGTH=25 value='<?php  echo  $row['nombre']?>'/></td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td><font size="+1">Clave:</font><input type='text' name='clave_usr' MAXLENGTH=20 value='<?php  echo  $row['clave']?>'/></td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td><font size="+1">Permisos: <?php  echo  $row['permisos']?></font></td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<input type="hidden" name="permisos" value=<?php  echo  $row['permisos']?> />
+				<td><font size="+1">Telefono:</font><input type='text' name='telefono_usr' MAXLENGTH=20 value='<?php  echo  $row['telefono']?>'/></td><br />
+				<td><font size="+1">Direccion:</font><br /> </td><td><input type='text' name='direccion_usr' size=100 MAXLENGTH=200 value='<?php  echo  $row['direccion']?>' /></td>
+				<input type="hidden" name="num_usr" value=<?php  echo  $row['num']?> />
+			</tr>
+			<br />		
+			<tr><td><input type="submit" value="Modificar"></td></tr>
+			<tr><td><input type="reset" value="Reset"></td></tr>
+			</center>
+	</form>
 
 	</div>
 	<!-- end #page -->
 </div>
 
 <!-- end #footer -->
-</body>		
-<?
-	}
-	else
-		{
-			?> <script language="javascript">
-			alert("DEBE INGRESAR AMBAS FECHAS COMPLETAS");
-			</script>
-			<?php
-			header("refresh:0; url=moslog.php");					
-		}
-?>
+</body>
 </html>
 

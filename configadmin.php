@@ -30,11 +30,18 @@ if(!isset($_SESSION["nombre"]))
 		$datapermiso = pg_fetch_array($query);
 		if($datapermiso['permisos'] == "administrador")
 			{?>
+
 			<form action="configadmin.php" method="post" style="text-align:center">
 				<input type=image src="images/engrana.png" width="30" height="30" >
 			</form>
 			<?php
 			}
+		?>	
+		<form action="carro.php" method="post" style="text-align:right">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
+
+		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -92,8 +99,37 @@ if(!isset($_SESSION["nombre"]))
 	}
 }
 
-
-
+//ACCIONES
+if(!empty($_GET['accion'])) 
+	{	
+	$i=1;
+		$con_ag = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+		$consulta_ag = "SELECT * FROM usuarios";
+		$result_ag = pg_query($consulta_ag) or die("Error query".pg_last_error() );
+	while ($row = pg_fetch_array($result_ag, null, PGSQL_ASSOC)) 
+		{
+		++$i;
+		}
+	
+		
+	if($_GET['accion']=="add")
+		{
+		$con_ag = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+		$consulta_ag = "INSERT INTO usuarios (nombre, clave, permisos, nombre_r, telefono, direccion,num) VALUES (' ',' ','comun',' ',' ',' ',".$i.")";
+		$result_ag = pg_query($consulta_ag) or die("Error query".pg_last_error() );
+		}
+	header("Location: configadmin.php?conf=usr");
+	}
+if(isset($_GET['borrar'])) 
+	{
+		
+		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
+		$consulta = "DELETE FROM usuarios WHERE num='" . $_GET['borrar']. "'";
+		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+		header("Location: configadmin.php?conf=usr");
+	}
+	
+	
 if(isset($_POST['nombre_corto'])&&isset($_POST['nombre_completo'])&&isset($_POST['direccion'])&&isset($_POST['iva'])&&isset($_POST['pagos'])) 
 	{
 	if($_POST['nombre_corto']==null||$_POST['nombre_corto']==" "||$_POST['nombre_completo']==null||$_POST['nombre_completo']==" "||$_POST['direccion']==null||$_POST['direccion']==" "||$_POST['iva']==null||$_POST['iva']==" "||$_POST['pagos']==null||$_POST['pagos']==" ")
@@ -174,7 +210,7 @@ if(isset($_SESSION['nombre']))
 				</ul>
 			</li>
 			<li class="first" style="text-align:right"> <a href="vender.php"><span><font size="+2">Vender</font></span> </a></li>
-			<li class="first" style="text-align:right"> <a href="carro.php"><span><font size="+2">Carro</font></span> </a></li>
+			<li class="first" style="text-align:right"> <a href="clientes.php"><span><font size="+2">Clientes</font></span> </a></li>
 			<li class="first" style="text-align:right"> <a href="factu.php"><span><font size="+2">Facturas</font></span> </a></li>
 			<?
 			$consulta_aux = "SELECT * FROM usuarios WHERE nombre='" . $_SESSION["nombre"]. "'";	
@@ -183,7 +219,7 @@ if(isset($_SESSION['nombre']))
 			if($row_aux['permisos']=="administrador")
 				{
 				?>
-				<li class="first" style="text-align:right"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<li class="first" style="float: right;"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
 				<?
 				}
 			?>
@@ -193,6 +229,7 @@ if(isset($_SESSION['nombre']))
 			$('#menu').dropotron();
 		</script>
 	</div>
+	
 		<?
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 			$consulta = "SELECT * FROM config";
@@ -202,67 +239,161 @@ if(isset($_SESSION['nombre']))
 	&nbsp;
 	<!-- end #menu -->
 	<div id="page">
-			<center><?echo "CONFIGURACIÓN MAESTRA"?></center>
+			<center><font size="+2"><?echo "CONFIGURACIÓN MAESTRA"?></font></center>
 			<hr style="color: #FFFFFF;" />
-			</br>
-	<center>			
-	<form name = 'mod'  method = 'POST' action='configadmin.php' onSubmit = 'return validar(this);'>
-			<tr>
-				<td>
-					<font size="+1">*Razon Social:</font><br /> </td><td><input type='text' name='nombre_completo' size=100 MAXLENGTH=100 value='<?php  echo  $row['n_completo']?>' />
-				</td>
-			</tr>
-			<br />
-			<br />
-			<tr>
-				<td>
-					<font size="+1">Ruta: </font><input type='text' name='ruta' MAXLENGTH=25 value='<?php  echo  $row['ruta']?>'/>
-				</td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td>
-					<font size="+1">*Nombre Corto: </font><input type='text' name='nombre_corto' MAXLENGTH=20 value='<?php  echo  $row['n_corto']?>'/>
-				</td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-			</tr>
-			<br />
-			<br />
-			<tr>
-				<td>
-					<font size="+1">*Dirección:</font><br /> </td><td><input type='text' name='direccion' size=100 MAXLENGTH=150 value='<?php  echo  $row['direccion']?>' />
-				</td>
-			</tr>
-			<br />
-			<br />
-			<tr>
-				<td>
-					<font size="+1">Rubro: </font><input type='text' name='rubro' size=30 MAXLENGTH=75 value='<?php  echo  $row['rubro']?>'/>
-				</td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td>
-					<font size="+1">¿Tiene Sucursales?: </font><input type='text' name='t_sucursales' size=10 MAXLENGTH=2 value='<?php  echo  $row['sucursales']?>'/>
-				</td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td>
-					<font size="+1">Cantidad de Sucursales: </font><input type='text' name='cantidad_s' MAXLENGTH=20 value='<?php  echo  $row['cantidad']?>'/>
-				</td>
-			</tr>			
-			<br />
-			<br />
-			<tr>
-				<td>
-					<font size="+1">*IVA:</font></td><td><input type='text' name='iva' size=10 MAXLENGTH=5 value='<?php  echo  $row['iva']?>' />
-				</td>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-				<td>
-					<font size="+1">*Tipos de Pago: </font><input type='text' name='pagos' size=100 MAXLENGTH=100 value='<?php  echo  $row['tipos_pago']?>'/>
-				</td>
-			</tr>			
-			<br />
-			<br />		
-			<tr><td><input type="submit" value="MODIFICAR"></td></tr>
-			<tr><td><input type="reset" value="RESET"></td></tr>
-			
-	</form>
+	<center>
+	<div id="menu-wrapper" style="margin:0 auto;" >
+		<ul id="menu2" style="margin:0 auto;" >
+		<center>
+			<li class="first"> <a href="configadmin.php?conf=usr"><span><font size="+2">USUARIOS</font></span> </a></li>
+			<li class="first" style="float: right;"> <a href="configadmin.php?conf=emp"><span><font size="+2">DATOS EMPRESA</font></span> </a></li>
+		</center>
+		</ul>
+		<script type="text/javascript">
+			$('#menu').dropotron();
+		</script>
+	</div>
+	<hr style="color: #FFFFFF;" />
+
+	<!-- eleccion de config -->
+	<?
+if (isset($_GET['conf']))
+	{
+	if ($_GET['conf']=="emp")
+		{	
+	?>
+	
+		<form name = 'mod'  method = 'POST' action='configadmin.php' onSubmit = 'return validar(this);'>
+				<tr>
+					<td>
+						<font size="+1">*Razon Social:</font><br /> </td><td><input type='text' name='nombre_completo' size=100 MAXLENGTH=100 value='<?php  echo  $row['n_completo']?>' />
+					</td>
+				</tr>
+				<br />
+				<br />
+				<tr>
+					<td>
+						<font size="+1">Ruta: </font><input type='text' name='ruta' MAXLENGTH=25 value='<?php  echo  $row['ruta']?>'/>
+					</td>
+					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+					<td>
+						<font size="+1">*Nombre Corto: </font><input type='text' name='nombre_corto' MAXLENGTH=20 value='<?php  echo  $row['n_corto']?>'/>
+					</td>
+					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				</tr>
+				<br />
+				<br />
+				<tr>
+					<td>
+						<font size="+1">*Dirección:</font><br /> </td><td><input type='text' name='direccion' size=100 MAXLENGTH=150 value='<?php  echo  $row['direccion']?>' />
+					</td>
+				</tr>
+				<br />
+				<br />
+				<tr>
+					<td>
+						<font size="+1">Rubro: </font><input type='text' name='rubro' size=40 MAXLENGTH=75 value='<?php  echo  $row['rubro']?>'/>
+					</td>
+					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+					<td>
+						<font size="+1">¿Tiene Sucursales?: </font><input type='text' name='t_sucursales' size=10 MAXLENGTH=2 value='<?php  echo  $row['sucursales']?>'/>
+					</td>
+					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+					<td>
+						<font size="+1">Cantidad de Sucursales: </font><input type='text' name='cantidad_s' size=10 MAXLENGTH=20 value='<?php  echo  $row['cantidad']?>'/>
+					</td>
+				</tr>			
+				<br />
+				<br />
+				<tr>
+					<td>
+						<font size="+1">*IVA:</font></td><td><input type='text' name='iva' size=10 MAXLENGTH=5 value='<?php  echo  $row['iva']?>' />
+					</td>
+					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+					<td>
+						<font size="+1">*Tipos de Pago Admitido: </font><input type='text' name='pagos' size=80 MAXLENGTH=100 value='<?php  echo  $row['tipos_pago']?>'/>
+					</td>
+				</tr>			
+				<br />
+				<br />		
+				<tr><td><input type="submit" value="MODIFICAR"></td></tr>
+				<tr><td><input type="reset" value="RESET"></td></tr>
+				
+		</form>
+	
+	<?
+		}
+	if ($_GET['conf']=="usr")
+		{
+		?>
+		<form action="configadmin.php?accion=add" method="post" style="text-align:center">
+			<input type=image src="images/agregarb.png" width="50" height="50" >
+		</form> 
+<center>			
+<div class="CSSTableGenerator" >
+			<?php  
+			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+			$consulta = "SELECT * FROM usuarios ORDER BY nombre_r";	
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );	
+			?>
+                <table width="70000">
+                    <tr>
+                        <td width="300">
+                            <font size="+1">Nombre Completo</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Usuario</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Permisos</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Telefono</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Opciones</font>
+                        </td>
+                    </tr> 
+                    <tr>
+					<?
+					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
+					?>
+                        <td >
+                            <font size="+1"><?php  echo  $row['nombre_r']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['nombre']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['permisos']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['telefono']?></font>
+                        </td>
+						<td width="70">
+						 <center>
+                          <input type="button" value="Ver" onClick="location='usuario.php?num_usr=<?php echo $row["num"];?>'">
+						  <input type="button" name='eliminar' value="Eliminar " 
+						    onClick="
+						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar este usuario?')) 
+											{
+											location.href='configadmin.php?borrar=<?php echo $row["num"];?>'
+						               }
+						  ">
+                         </center>
+						</td>
+                    </tr>
+				<?	
+                  endwhile;  
+				?>
+                </table>
+
+            </div>
+    </center> 		
+		<?		
+		}
+	}
+	?>
     </center>        
 &nbsp
 <?
@@ -272,6 +403,7 @@ if(isset($_SESSION['nombre']))
 ?>
 	</div>
 	<!-- end #page -->
+&nbsp
 </div>
 
 <!-- end #footer -->

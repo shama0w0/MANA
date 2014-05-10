@@ -99,6 +99,55 @@ if(!isset($_SESSION["nombre"]))
 	}
 }
 
+//ACCIONES
+if(!empty($_GET['accion'])) 
+	{
+	$j=0;	
+	$i=1;
+		$con_ag = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+		$consulta_ag = "SELECT * FROM clientes";
+		$result_ag = pg_query($consulta_ag) or die("Error query".pg_last_error() );
+	while ($row = pg_fetch_array($result_ag, null, PGSQL_ASSOC)) 
+		{
+		++$i;
+		}
+		
+	if($_GET['accion']=="add")
+		{
+		$con_ag = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+		$consulta_ag = "INSERT INTO clientes (nombre, rut, direccion, descuento, num) VALUES (' ',' ',' ',".$j.",".$i.")";
+		$result_ag = pg_query($consulta_ag) or die("Error query".pg_last_error() );
+		}
+	}
+if(isset($_GET['borrar'])) 
+	{
+		
+		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
+		$consulta = "DELETE FROM clientes WHERE num='" . $_GET['borrar']. "'";
+		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+	}
+	
+	
+if(isset($_POST['nombre_corto'])&&isset($_POST['nombre_completo'])&&isset($_POST['direccion'])&&isset($_POST['iva'])&&isset($_POST['pagos'])) 
+	{
+	if($_POST['nombre_corto']==null||$_POST['nombre_corto']==" "||$_POST['nombre_completo']==null||$_POST['nombre_completo']==" "||$_POST['direccion']==null||$_POST['direccion']==" "||$_POST['iva']==null||$_POST['iva']==" "||$_POST['pagos']==null||$_POST['pagos']==" ")
+			{
+				?> 
+					<script language="javascript">
+					alert("LOS CAMPOS CON UN * SON OBLIGATORIOS"); 
+					</script>
+				<?php
+			}else
+				{
+						$consulta = "UPDATE config SET ruta='" . pg_escape_string ($_POST['ruta']) . "', n_completo='" . pg_escape_string ($_POST['nombre_completo']) . "', n_corto='" . pg_escape_string ($_POST['nombre_corto']) . "', direccion='" . pg_escape_string ($_POST['direccion']) . "', rubro='" . pg_escape_string ($_POST['rubro']) . "', sucursales='" . pg_escape_string ($_POST['t_sucursales']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_s']) . "', iva='" . pg_escape_string ($_POST['iva']) . "', tipos_pago='" . pg_escape_string ($_POST['pagos']) . "'";	
+						$result = pg_query($consulta) or die("Error query".pg_last_error() );
+						?> <script language="javascript">
+						alert("CONFIGURACION MODIFICADA"); 
+						</script>
+						<?php					
+				}
+	}
+
 ?>
 
 
@@ -132,33 +181,6 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <?php 
 if(isset($_SESSION['nombre']))
 			{ 
-			
-if(isset($_GET['borrar'])) 
-	{
-		#echo $_GET['borrar'];
-		#echo $_GET['why'];
-		
-		$consulta3 = "SELECT * FROM productos WHERE codigo='" . $_GET['borrar']. "'";	
-		$result3 = pg_query($consulta3) or die("Error query".pg_last_error() );
-		$row3 = pg_fetch_array($result3, null, PGSQL_ASSOC);	
-		
-		$fecha_hora=date("d-m-Y H:i:s");
-		
-		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
-		$consulta = "DELETE FROM productos WHERE codigo='" . $_GET['borrar']. "'";
-		$result = pg_query($consulta) or die("Error query".pg_last_error() );
-		if ($result)
-			{
-			$consulta2 = "INSERT INTO logs (origen, nombre_user, razon, nombre_pro, codigo_pro, fecha) VALUES ('borrar_producto','" . $_SESSION["nombre"] . "','" . $_GET['why'] . "','" . $row3['nombre'] . "','" . $row3['codigo'] . "','" . $fecha_hora . "')";
-			$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
-			?> <script language="javascript">
-			alert("PRODUCTO ELIMINADO"); 
-			</script>
-			<?php
-			header("refresh:0; url=mospro.php");
-			}
-	}
-	
 ?>
 <body>
 <div id="wrapper"> 
@@ -205,159 +227,35 @@ if(isset($_GET['borrar']))
 			$('#menu').dropotron();
 		</script>
 	</div>
-
 	&nbsp;
 	<!-- end #menu -->
 	<div id="page">
 
-			<TABLE width="100%"> 
-				<tr>
-					<td>
-						<h4 style="text-align:center">
-							<form method="get" action="buscarlog.php" >
-								Buscador: <input type="text" name="buscar" id="search-text" value="" />
-							</form>
- 						</h4>
-					</td>
-					<td>
-						<form action="logtopdf.php" method="post" style="text-align:center">
-							<input type=image src="images/pdf.png" width="50" height="50" >
-						</form>
-					</td>
-				</tr>
-			</TABLE>
-<h4 style="text-align:center">
-				<form method="post" action="buscarlog2.php" >
-	&nbsp;&nbsp;
-			Fecha de Inicio:
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				
-			Fecha de Termino:
-						<br>
-						Día: 
-						<select name=dia1>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=31; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select> 
-						Mes: 
-						<select name=mes1>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=12; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select>
-						Año: 
-						<select name=anio1>
-						<?echo "<option value='-'></option>";
-							for($i=2013; $i<=2099; $i++) {
-								echo "<option value=$i>$i</option>";
-								}
-						?>
-						</select>
-						&nbsp;&nbsp;
-						&nbsp;&nbsp;
-						y
-						&nbsp;&nbsp;
-						&nbsp;&nbsp;
-									
-						Día: 
-						<select name=dia2>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=31; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select> 
-						Mes: 
-						<select name=mes2>
-						<?echo "<option value='-'></option>";
-							for($i=1; $i<=12; $i++) 
-							{
-							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
-								{
-								echo "<option value=0$i>0$i</option>";
-								}
-								else
-									{
-									echo "<option value=$i>$i</option>";
-									}
-							}
-						?>
-						</select>
-						Año: 
-						<select name=anio2>
-						<?echo "<option value='-'></option>";
-							for($i=2013; $i<=2099; $i++) {
-								echo "<option value=$i>$i</option>";
-								}
-						?>
-						</select>			
-						
-						</td>
-				</br>			
-				<input type="submit" style="width:160px; height:30px; font-size:12pt" name="buscarlog" value="Buscar por Fecha">			
-			</form>
- 	</h4>
-			<hr style="color: #FFFFFF;" />
-			</br>
+	<hr style="color: #FFFFFF;" />
+
+		<form action="clientes.php?accion=add" method="post" style="text-align:center">
+			<input type=image src="images/agregarb.png" width="50" height="50" >
+		</form> 
 <center>			
 <div class="CSSTableGenerator" >
 			<?php  
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM logs ORDER BY fecha desc";	
+			$consulta = "SELECT * FROM clientes ORDER BY nombre";	
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );	
 			?>
-                <table >
+                <table width="70000">
                     <tr>
-                        <td width="70">
-                            <font size="+1">Origen</font>
-                        </td>
-                        <td width="200">
-                            <font size="+1">Usuario</font>
-                        </td>
-                        <td width="600">
-                            <font size="+1">Razón</font>
-                        </td>
                         <td width="300">
-                            <font size="+1">Nombre_P</font>
+                            <font size="+1">Nombre Cliente</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">RUT</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Descuento</font>
                         </td>
                         <td width="150">
-                            <font size="+1">Codigo_P</font>
-                        </td>
-                        <td width="200">
-                            <font size="+1">Hora y Fecha</font>
+                            <font size="+1">Opciones</font>
                         </td>
                     </tr> 
                     <tr>
@@ -365,23 +263,26 @@ if(isset($_GET['borrar']))
 					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
 					?>
                         <td >
-                            <font size="+1"><?php  echo  $row['origen']?></font>
+                            <font size="+1"><?php  echo  $row['nombre']?></font>
                         </td>
                         <td >
-                            <font size="+1"><?php  echo  $row['nombre_user']?></font>
+                            <font size="+1"><?php  echo  $row['rut']?></font>
                         </td>
                         <td>
-                            <font size="+1"><?php  echo  $row['razon']?></font>
+                            <font size="+1"><?php  echo  $row['descuento']?></font>
                         </td>
-                        <td >
-                            <font size="+1"><?php  echo  $row['nombre_pro']?></font>
-                        </td>
-                        <td >
-                            <font size="+1"><?php  echo  $row['codigo_pro']?></font>
-                        </td>
-                        <td>
-                            <font size="+1"><?php  echo  $row['fecha']?></font>
-                        </td>
+						<td width="70">
+						 <center>
+                          <input type="button" value="Ver" onClick="location='moscliente.php?num_cli=<?php echo $row["num"];?>'">
+						  <input type="button" name='eliminar' value="Eliminar " 
+						    onClick="
+						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar este cliente?')) 
+											{
+											location.href='clientes.php?borrar=<?php echo $row["num"];?>'
+						               }
+						  ">
+                         </center>
+						</td>
                     </tr>
 				<?	
                   endwhile;  
@@ -389,6 +290,7 @@ if(isset($_GET['borrar']))
                 </table>
 
             </div>
+    </center> 		
     </center>        
 &nbsp
 <?
@@ -398,6 +300,7 @@ if(isset($_GET['borrar']))
 ?>
 	</div>
 	<!-- end #page -->
+&nbsp
 </div>
 
 <!-- end #footer -->

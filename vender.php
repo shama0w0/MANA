@@ -30,11 +30,18 @@ if(!isset($_SESSION["nombre"]))
 		$datapermiso = pg_fetch_array($query);
 		if($datapermiso['permisos'] == "administrador")
 			{?>
+
 			<form action="configadmin.php" method="post" style="text-align:center">
 				<input type=image src="images/engrana.png" width="30" height="30" >
 			</form>
 			<?php
 			}
+		?>	
+		<form action="carro.php" method="post" style="text-align:right">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
+
+		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -151,9 +158,19 @@ if(isset($_SESSION['nombre']))
 				</ul>
 			</li>
 			<li class="first" style="text-align:right"> <a href="vender.php"><span><font size="+2">Vender</font></span> </a></li>
-			<li class="first" style="text-align:right"> <a href="carro.php"><span><font size="+2">Carro</font></span> </a></li>
+			<li class="first" style="text-align:right"> <a href="clientes.php"><span><font size="+2">Clientes</font></span> </a></li>
 			<li class="first" style="text-align:right"> <a href="factu.php"><span><font size="+2">Facturas</font></span> </a></li>
-
+			<?
+			$consulta_aux = "SELECT * FROM usuarios WHERE nombre='" . $_SESSION["nombre"]. "'";	
+			$result_aux = pg_query($consulta_aux) or die("Error query".pg_last_error() );
+			$row_aux = pg_fetch_array($result_aux, null, PGSQL_ASSOC);
+			if($row_aux['permisos']=="administrador")
+				{
+				?>
+				<li class="first" style="float: right;"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<?
+				}
+			?>
 
 		</ul>
 		<script type="text/javascript">
