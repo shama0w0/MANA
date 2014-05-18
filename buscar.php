@@ -35,12 +35,6 @@ if(!isset($_SESSION["nombre"]))
 			</form>
 			<?php
 			}
-		?>	
-		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
-
-		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -130,6 +124,28 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
+
+<?
+#BUSCADOR
+	$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+	$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%'";
+	$result = pg_query($consulta) or die("Error query".pg_last_error() );
+	$rowaux = pg_fetch_array($result, null, PGSQL_ASSOC);	
+	if($rowaux){
+		$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%' ORDER BY codigo" ;
+		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+		}
+		else
+			{
+			?> <script language="javascript">
+	  		alert("PRODUCTO NO ENCONTRADO");
+	  		</script>
+	  		<?php
+	  		header("refresh:0; url=mospro.php");					
+			}
+?>	
+
+
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -141,10 +157,12 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>
+			</div>		
 		</div>
-	</div>
-	</div>
+	</div>				
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 	<div id="menu-wrapper">
 		<ul id="menu">
@@ -175,24 +193,7 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			$('#menu').dropotron();
 		</script>
 	</div>
-		<?
-			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%'";
-			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-			$rowaux = pg_fetch_array($result, null, PGSQL_ASSOC);	
-			if($rowaux){
-				$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%' ORDER BY codigo" ;
-				$result = pg_query($consulta) or die("Error query".pg_last_error() );
-				}
-				else
-					{
-						?> <script language="javascript">
-				  		alert("PRODUCTO NO ENCONTRADO");
-				  		</script>
-				  		<?php
-				  		header("refresh:0; url=mospro.php");					
-					}
-		?>			
+	&nbsp;		
 	<!-- end #menu -->
 
 	<div id="page">
@@ -241,10 +242,10 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
                             <font size="+1"><?php  echo  $row['nombre']?></font>
                         </td>
 						<td>
-                            <font size="+1"><?php  echo  $row['precio']?></font> 
+                            <font size="+1"><?php  echo  $row['cantidad']?></font> 
                         </td>
                         <td>
-                            <font size="+1"><?php  echo  $row['cantidad']?></font>
+                            <font size="+1"><?php  echo  $row['precio']?></font>
                         </td>
 
                         <td width="70">
@@ -274,9 +275,8 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 
             </div>
     </center>        
-&nbsp
 
-	</div>
+	</div>	&nbsp;
 	<!-- end #page -->
 </div>
 

@@ -36,12 +36,6 @@ if(!isset($_SESSION["nombre"]))
 			</form>
 			<?php
 			}
-		?>	
-		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
-
-		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -195,10 +189,12 @@ if(isset($_SESSION['nombre']))
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>
+			</div>		
 		</div>
-	</div>
-	</div>
+	</div>				
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 	<div id="menu-wrapper">
 		<ul id="menu">
@@ -262,7 +258,7 @@ if (isset($_GET['conf']))
 	if ($_GET['conf']=="emp")
 		{	
 	?>
-	
+	"Los campos con un * son obligatorio"
 		<form name = 'mod'  method = 'POST' action='configadmin.php' onSubmit = 'return validar(this);'>
 				<tr>
 					<td>
@@ -273,11 +269,11 @@ if (isset($_GET['conf']))
 				<br />
 				<tr>
 					<td>
-						<font size="+1">Ruta: </font><input type='text' name='ruta' MAXLENGTH=25 value='<?php  echo  $row['ruta']?>'/>
+						<font size="+1">Ruta: </font><input type='text' name='ruta' MAXLENGTH=50 value='<?php  echo  $row['ruta']?>'/>
 					</td>
 					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 					<td>
-						<font size="+1">*Nombre Corto: </font><input type='text' name='nombre_corto' MAXLENGTH=20 value='<?php  echo  $row['n_corto']?>'/>
+						<font size="+1">*Nombre Corto: </font><input type='text' name='nombre_corto' MAXLENGTH=30 value='<?php  echo  $row['n_corto']?>'/>
 					</td>
 					&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 				</tr>

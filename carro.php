@@ -36,12 +36,6 @@ if(!isset($_SESSION["nombre"]))
 			</form>
 			<?php
 			}
-		?>	
-		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
-
-		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -130,6 +124,68 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
 <?php 
+
+//QUITAR
+if(!empty($_GET['quitar']))
+	{
+		$usr=pg_escape_string($_SESSION["nombre"]);
+		$compra = fopen("compras/".$usr.".txt", "r");
+		$compraaux=file("compras/".$usr.".txt");
+		$cont=0;
+		while (!feof($compra)) 
+			{
+			$bufer = fgets($compra, 4096); 
+			$test = explode("/",$bufer);
+			if($test[0]==$_GET['quitar'])
+				{
+				echo $cont.$_GET['quitar'].$test[0]."<br>";
+				unset($compraaux[$cont]);
+				file_put_contents("compras/".$usr.".txt", join('', $compraaux)); 
+				}
+			$cont++;
+			}
+		Header("Location: carro.php"); 	
+	}
+
+
+//VACIAR
+if(!empty($_GET['quitart']))
+	{
+	$usr=pg_escape_string($_SESSION["nombre"]);
+	fopen("compras/".$usr.".txt",'w+');
+	Header("Location: carro.php"); 	
+	}
+//COMPRAR
+if(!empty($_GET['comprar']))
+	{
+$usr=pg_escape_string($_SESSION["nombre"]);
+$compra = fopen("compras/".$usr.".txt", "r");
+			while (!feof($compra)) 
+				{
+				$bufer = fgets($compra, 4096); 
+				$test = explode("/",$bufer);
+				if($test[0]!=NULL)
+					{
+					$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+					$consulta = "SELECT * FROM productos WHERE codigo='" . $test[0] . "'";	
+					$result = pg_query($consulta) or die("Error query".pg_last_error() );
+					$row = pg_fetch_array($result, null, PGSQL_ASSOC);			
+					$nueva_cantidad=$row['cantidad']-$test[1];
+					if($nueva_cantidad<0){$nueva_cantidad=0;}
+					$consulta2 = "UPDATE productos SET cantidad='" . pg_escape_string ($nueva_cantidad) . "' WHERE codigo='" . $test[0] . "'";	
+					$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
+ 	
+					}
+				}
+			?> <script language="javascript">
+			alert("COMPRA REALIZADA");
+			</script>
+			<?php						
+			fopen("compras/".$usr.".txt",'w+');
+			Header("refresh:3; url=carro.php");
+	}
+
+
 if(isset($_SESSION['nombre']))
 			{ ?>
 <body>
@@ -143,10 +199,12 @@ if(isset($_SESSION['nombre']))
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>
+			</div>		
 		</div>
-	</div>
-	</div>
+	</div>				
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 <div id="menu-wrapper">
 		<ul id="menu">
@@ -167,7 +225,7 @@ if(isset($_SESSION['nombre']))
 			if($row_aux['permisos']=="administrador")
 				{
 				?>
-				<li class="first" style="float: right;""> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<li class="first" style="float: right;"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
 				<?
 				}
 			?>
@@ -183,18 +241,58 @@ if(isset($_SESSION['nombre']))
 	<div id="page">
 <center>
 <div class="CSSTableGenerator" >
+			<?php  
+			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+			$consulta = "SELECT * FROM clientes ORDER BY nombre";	
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );
+	
+			?>
                 <table >
-				<label for="clientes">CLIENTES</label> <br/>
+				<label for="clientes">CLIENTE PARA LA VENTA</label> <br/>
 				<select id="clientes" name="cliente">
-					<option value="" selected="selected">SELECCION UN CLIENTE</option>
-					<option value="windows">CLIENTE  1</option>
-					<option value="mac">CLIENTE 2</option>
-					<option value="linux">CLIENTE 3</option>
+					<option value="" selected="selected">SELECCIONE UN CLIENTE</option>
+					<?
+					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
+					?>
+					<option value="<?php  echo  $row['nombre']?>"><?php  echo  $row['nombre']?></option>					
+					<?
+					endwhile;
+					?>
 					<option value="otro">OTRO</option>
 				</select> 
+				&nbsp;&nbsp;&nbsp;
+				<INPUT TYPE="submit" NAME="OK" VALUE="Mostrar">
 				<br/> <br/>
-				<label for="clientesN">SI ELEGISTE "OTRO" INGRESA EL NOMBRE DEL CLIENTE</label> <br/>
-				<input type='text' size="50" name='nombre_clienteN' MAXLENGTH=60 />
+				<?
+				if(isset($_POST['cliente'])){
+					if($_POST['cliente']=="otro")
+						{
+						
+						echo "Nombre: ";
+						?><input type='text' size="40" name='nombre_cliente' MAXLENGTH=50 />
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<?	
+						echo "Rut: ";
+						?><input type='text' size="20" name='nombre_cliente' MAXLENGTH=11 /><br><?
+						echo "Direccion: ";
+						?><input type='text' size="50" name='nombre_cliente' MAXLENGTH=200 />
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?
+						echo "Descuento: ";
+						?><input type='text' size="5" name='nombre_cliente' MAXLENGTH=2 /><br><?
+						}else
+							{
+							$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+							$consulta = "SELECT * FROM clientes WHERE nombre='" . $_POST['cliente']. "'";	
+							$result = pg_query($consulta) or die("Error query".pg_last_error() );
+							$row = pg_fetch_array($result, null, PGSQL_ASSOC);
+							echo "Nombre: ".$row['nombre']."<br>";
+							echo "Rut: ".$row['rut']."<br>";
+							echo "Direccion: ".$row['direccion']."<br>";
+							echo "Descuento: ".$row['descuento']."<br>";
+							}
+				}
+				?>
+				
 				 <br/> <br/>
                     <tr>
 					                        <td width="70">
@@ -213,27 +311,49 @@ if(isset($_SESSION['nombre']))
                             <font size="+1">Opciones</font>
                         </td>
                     </tr> 
+					
+<!-- LEER TXT DE COMPRA-->
+<?
+$usr=pg_escape_string($_SESSION["nombre"]);
+$compra = fopen("compras/".$usr.".txt", "r");
+$totalcantidad=0;
+$totalprecio=0;
+			while (!feof($compra)) 
+				{
+				$bufer = fgets($compra, 4096); 
+				$test = explode("/",$bufer);
+				if($test[0]!=NULL){
+					$totalcantidad=$totalcantidad+$test[1];
+					$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+					$consulta = "SELECT * FROM productos WHERE codigo='" . $test[0] . "'";	
+					$result = pg_query($consulta) or die("Error query".pg_last_error() );
+					$row = pg_fetch_array($result, null, PGSQL_ASSOC);			
+					$totalprecio=$totalprecio+($row['precio']*$test[1]);
+?>
                     <tr>
 					     <td >
-                            <font size="+1">Row 1</font>
+                            <font size="+1"><?php  echo  $row['codigo']?></font>
                         </td>
                         <td >
-                            <font size="+1">Row 1</font>
+                            <font size="+1"><?php  echo  $row['nombre']?></font>
                         </td>
                         <td>
-                            <font size="+1">Row 1</font>
+                            <font size="+1"><?php  echo  $test[1]?></font>
                         </td>
                         <td> 
-                            <font size="+1">Row 1</font>
+                            <font size="+1"><?php  echo  $row['precio']?></font>
                         </td>
                         <td width="70">
 						 <center>
-						 <input type="button" value="Quitar" onClick="location=''">
+						 <input type="button" value="Quitar" onClick="location.href='carro.php?quitar=<?php echo $row['codigo'];?>'">
                          </center>
 
 						</td>
 
                     </tr>
+				<?}}fclose ($compra);?>
+<!-- FIN  DE LEER TXT DE COMPRA-->
+
 					<tr>                     
 						<td >
                            
@@ -241,12 +361,12 @@ if(isset($_SESSION['nombre']))
 						<td >
                         </td>
                         <td>
-						<font size="+1">	Total: </font>
+						<font size="+1">	Total: <? echo $totalcantidad?></font>
                         <td> 
-                            	<font size="+1">	Total: </font>
+                            	<font size="+1">	Total: $<? echo number_format($totalprecio)?></font>
                         </td>
 						<td >
-        	<input type="submit" style="width:100px; height:30px; font-size:12pt" value="COMPRAR">
+        	<input type="button" style="width:100px; height:30px; font-size:12pt" value="COMPRAR" onClick="location.href='carro.php?comprar=1&ct=<? echo $totalcantidad?>&pt=<? echo number_format($totalprecio)?>'">
 
 						</td>
 
@@ -256,16 +376,12 @@ if(isset($_SESSION['nombre']))
                 </table>
 	</br>
 	<h4 style="text-align:center">
-			<input type="reset" style="width:130px; height:30px; font-size:12pt" value="Vaciar Carro">
+			<input type="reset" style="width:130px; height:30px; font-size:12pt" value="Vaciar Carro" onClick="location.href='carro.php?quitart=1'">
 	</h4>
             </div>
  </center>           
-&nbsp
-<div align="center">
 
-</div>
-
-	</div>
+	</div>&nbsp;
 	<!-- end #page -->
 </div>
 

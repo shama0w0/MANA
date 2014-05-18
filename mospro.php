@@ -36,12 +36,6 @@ if(!isset($_SESSION["nombre"]))
 			</form>
 			<?php
 			}
-		?>	
-		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
-
-		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -156,8 +150,6 @@ if(isset($_GET['borrar']))
 			header("refresh:0; url=mospro.php");
 			}
 	}
-
-	
 ?>
 <body>
 <div id="wrapper"> 
@@ -170,10 +162,12 @@ if(isset($_GET['borrar']))
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>
+			</div>		
 		</div>
-	</div>
-	</div>
+	</div>				
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 	<div id="menu-wrapper">
 		<ul id="menu">
@@ -264,10 +258,10 @@ if(isset($_GET['borrar']))
                             <font size="+1"><?php  echo  $row['nombre']?></font>
                         </td>
 						<td>
-                            <font size="+1"><?php  echo  $row['precio']?></font> 
+                            <font size="+1"><?php  echo  $row['cantidad']?></font> 
                         </td>
                         <td>
-                            <font size="+1"><?php  echo  $row['cantidad']?></font>
+                            <font size="+1"><?php  echo  $row['precio']?></font>
                         </td>
 
                         <td width="70">
@@ -297,13 +291,12 @@ if(isset($_GET['borrar']))
 
             </div>
     </center>        
-&nbsp
 <?
 #<div align="center">
 #<a href="javascript:history.go(-1)" style="text-decoration:none"><font size="+1" color="FFFFFF" >Atrás</font> </a><------><a href="moscar.php?pag=" style="text-decoration:none" ><font size="+1" color="FFFFFF">Siguiente</font></a>
 #</div>
 ?>
-	</div>
+	</div>	&nbsp;
 	<!-- end #page -->
 </div>
 

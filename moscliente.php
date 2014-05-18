@@ -84,7 +84,7 @@ if(!isset($_SESSION["nombre"]))
 		 				}
 					}
 			case "logout":
- 
+
 				unset($_SESSION["nombre"]);
 				session_destroy();
 				header('refresh:0; url=index.php');
@@ -104,6 +104,8 @@ if(!isset($_SESSION["nombre"]))
 header('Location: index.php');
 }
 ?>
+
+
 <?			
 $con_t = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 $consulta_t = "SELECT * FROM config";	
@@ -123,35 +125,44 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
-<?php 
 
-#AGREGAR AL CARRO
-if(!empty($_GET['addcarro']))
+<?
+
+if(isset($_POST['nombre_cli'])&&isset($_POST['rut_cli'])&&isset($_POST['dir_cli'])) 
 	{
-	if(is_numeric($_POST['cantidad'])) 
+	if($_POST['nombre_cli']==null||$_POST['nombre_cli']==" "||$_POST['rut_cli']==null||$_POST['rut_cli']==" "||$_POST['dir_cli']==null||$_POST['dir_cli']==" ")
 		{
-		$consulta_aux = "SELECT * FROM productos WHERE codigo='" . $_POST['codigo_pro']. "'";	
-		$result_aux = pg_query($consulta_aux) or die("Error query".pg_last_error() );
-		$row_aux = pg_fetch_array($result_aux, null, PGSQL_ASSOC);
-		
-		if($row_aux['cantidad']-$_POST['cantidad']<0)
+		?> 
+		<script language="javascript">
+			alert("LOS CAMPOS CON UN * SON OBLIGATORIOS"); 
+		</script>
+		<?php
+		}		
+		else
 			{
-			?> <script language="javascript">
-			alert("NO QUEDA STOCK SUFICIENTE DE ESTE PRODUCTO");
-			</script>
-			<?php		
-			}else
-				{
-				$contenido=$_POST['codigo_pro']."/".$_POST['cantidad'];
-				$usr=pg_escape_string($_SESSION["nombre"]);
-				$fp=fopen("compras/".$usr.".txt","a+");
-				fwrite($fp,$contenido. PHP_EOL);
-				fclose($fp) ;
-				}
-		}			
+			if(is_numeric($_POST['descuento_cli'])) 
+					{
+					$consulta = "UPDATE clientes SET nombre='".pg_escape_string ($_POST['nombre_cli'])."', rut='".pg_escape_string ($_POST['rut_cli']) ."', direccion='".pg_escape_string ($_POST['dir_cli'])."', descuento='".pg_escape_string ($_POST['descuento_cli'])."' WHERE num='".$_POST['num_cli']."'";	
+					$result = pg_query($consulta) or die("Error query".pg_last_error() );
+					?> <script language="javascript">
+					alert("CLIENTE MODIFICADO"); 
+					</script>
+					<?php	
+					}
+					else
+						{
+						?> 
+						<script language="javascript">
+							alert("DESCUENTO DEBE SER NUMERICO"); 
+						</script>
+						<?php
+						}
+			}		
 	}
-if(isset($_SESSION['nombre']))
-			{ ?>
+
+
+?>
+
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -170,7 +181,7 @@ if(isset($_SESSION['nombre']))
 			<input type=image src="images/carro3.png" width="50" height="50" >
 		</form>
 	<!-- end #header -->
-<div id="menu-wrapper">
+	<div id="menu-wrapper">
 		<ul id="menu">
 			
 			<li><span><font size="+2">Stock</font></span>
@@ -199,88 +210,48 @@ if(isset($_SESSION['nombre']))
 			$('#menu').dropotron();
 		</script>
 	</div>
-
-	&nbsp;
+		<?
+			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+			if(isset($_GET['num_cli']))
+				{
+				$consulta = "SELECT * FROM clientes WHERE num='" . $_GET['num_cli']. "'";
+				}
+				else
+					{
+					$consulta = "SELECT * FROM clientes WHERE num='" . $_POST['num_cli']. "'";	
+					}
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );
+			$row = pg_fetch_array($result, null, PGSQL_ASSOC);	
+		?>		
+&nbsp;		
 	<!-- end #menu -->
 	<div id="page">
-			 <h4 style="text-align:center">
-			<form method="get" action="buscarventa.php" >
-							Buscador de Productos: <input type="text" name="buscar" id="search-text" value="" />
-			</form>
- 			</h4>
-			<hr style="color: #FFFFFF;" />
-</br>
-<center>
-<div class="CSSTableGenerator" >
-			<?php  
-			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM productos ORDER BY codigo";	
-			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-	
-			?>
-                <table >
-                    <tr>
-					     <td>
-                            <font size="+1">Codigo</font>
-                        </td>
-                        <td width="650">
-                            <font size="+1">Nombre producto</font>
-                        </td>
-                        <td width="50">
-                            <font size="+1">Cantidad</font>
-                        </td>
-						<td width="70">
-                            <font size="+1">Precio</font>
-                        </td>
-                        <td width="150">
-                            <font size="+1">Opciones</font>
-                        </td>
-                    </tr> 
-					<?
-					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
-					?><form name="addcarro" action="vender.php?addcarro=1" method= "POST" onSubmit = 'return validar(this);'>
-                    <tr>
-                        <td >
-                            <font size="+1"><?php  echo  $row['codigo']?></font>
-							<input type="hidden" name="codigo_pro" value=<?php  echo  $row['codigo']?> />                        
-						</td>
-                        <td >
-                            <font size="+1"><?php  echo  $row['nombre']?></font>
-                        </td>
-						<td>
-                            <font size="+1"><?php  echo  $row['cantidad']?></font>
-                        </td>
-                        <td>
-                            <font size="+1"><?php  echo  $row['precio']?></font>
-                        </td>
-                        <td width="70">
-						 <center>
-						 <input type="text" name="cantidad" size="5" MAXLENGTH=10/>
-                          <input type="submit" value="Agregar">
+	<form name = 'mod_c'  method = 'POST' action='moscliente.php' onSubmit = 'return validar(this);'>
+			<center>
+			"Los campos marcados con un * son obligatorios y descuento es un numero entero"
+			<br /><br />
+			<tr>
+				<td><font size="+1">*Nombre Cliente:</font><input type='text' name='nombre_cli' size=75 MAXLENGTH=50 value='<?php  echo  $row['nombre']?>'/></td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td><font size="+1">*RUT:</font><input type='text' name='rut_cli' MAXLENGTH=11 value='<?php  echo  $row['rut']?>'/></td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<br><br>
+				<td><font size="+1">*Direccion:</font><input type='text' name='dir_cli' size=100 MAXLENGTH=200 value='<?php  echo  $row['direccion']?>'/></td>				
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td><font size="+1">Descuento:</font><input type='text' name='descuento_cli' MAXLENGTH=20 value='<?php  echo  $row['descuento']?>'/></td><br />
+				<input type="hidden" name="num_cli" value=<?php  echo  $row['num']?> />
+			</tr>
+			<br />		
+			<tr><td><input type="submit" value="Modificar"></td></tr>
+			<tr><td><input type="reset" value="Reset"></td></tr>
+			</center>
+	</form>
 
-                         </center>
-						</td>
-                    </tr></form>
-					<?	
-					endwhile;  
-					?>	
-
-                </table>
-            </div>
- </center>           
-<?
-#<div align="center">
-#<a href="javascript:history.go(-1)" style="text-decoration:none"><font size="+1" color="FFFFFF" >Atrás</font> </a><------><a href="moscar.php?pag=" style="text-decoration:none" ><font size="+1" color="FFFFFF">Siguiente</font></a>
-#</div>
-?>
-
-	</div>	&nbsp;
+	</div>
 	<!-- end #page -->
 </div>
 
 <!-- end #footer -->
-<?php
-
-} else{ header("refresh:0; url=index.php");exit;} ?>
 </body>
 </html>
+

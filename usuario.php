@@ -36,12 +36,6 @@ if(!isset($_SESSION["nombre"]))
 			</form>
 			<?php
 			}
-		?>	
-		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
-
-		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -157,9 +151,12 @@ if(isset($_POST['nombre_usr'])||isset($_POST['clave_usr'])||isset($_POST['nombre
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>
+			</div>		
 		</div>
-	</div>
+	</div>				
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 	<div id="menu-wrapper">
 		<ul id="menu">
@@ -204,8 +201,8 @@ if(isset($_POST['nombre_usr'])||isset($_POST['clave_usr'])||isset($_POST['nombre
 			$row = pg_fetch_array($result, null, PGSQL_ASSOC);	
 		?>			
 	<!-- end #menu -->
+	&nbsp;
 	<div id="page">
-	 <br />
 	<form name = 'mod'  method = 'POST' action='usuario.php' onSubmit = 'return validar(this);'>
 			<center><tr><td><font size="+1">Nombre Real:</font><br /> </td><td><input type='text' name='nombre_r_user' size=100 MAXLENGTH=100 value='<?php  echo  $row['nombre_r']?>' /></td></tr><br />
 			<br />

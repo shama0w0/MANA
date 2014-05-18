@@ -128,15 +128,16 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
+			</div>		
 		</div>
 	</div>		
 
 
 <?php if(isset($_SESSION['nombre']))
-		{?>
+		{?>			
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 	<div id="menu-wrapper">
 		<ul id="menu">

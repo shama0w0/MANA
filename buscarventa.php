@@ -36,12 +36,7 @@ if(!isset($_SESSION["nombre"]))
 			</form>
 			<?php
 			}
-		?>	
-		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
 
-		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -131,6 +126,31 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="jquery.dropotron-1.0.js"></script>
 </head>
+
+
+<?
+#BUSCADOR
+	$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+	$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%'";
+	$result = pg_query($consulta) or die("Error query".pg_last_error() );
+	$rowaux = pg_fetch_array($result, null, PGSQL_ASSOC);	
+	if($rowaux){
+		$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%' ORDER BY codigo" ;
+		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+		}
+		else
+			{
+			?> <script language="javascript">
+	  		alert("PRODUCTO NO ENCONTRADO");
+	  		</script>
+	  		<?php
+	  		header("refresh:0; url=vender.php");					
+			}
+			
+?>	
+
+
+
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -142,9 +162,12 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>
+			</div>		
 		</div>
-	</div>
+	</div>				
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 	<div id="menu-wrapper">
 		<ul id="menu">
@@ -165,7 +188,7 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			if($row_aux['permisos']=="administrador")
 				{
 				?>
-				<li class="first" style="float: right;""> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
+				<li class="first" style="float: right;"> <a href="moslog.php"><span><font size="+2">LOGS</font></span> </a></li>
 				<?
 				}
 			?>
@@ -175,20 +198,7 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 			$('#menu').dropotron();
 		</script>
 	</div>
-		<?
-			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM productos WHERE nombre LIKE '%" . $_GET['buscar']. "%' OR codigo LIKE '%" . $_GET['buscar']. "%'";
-			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-			if($result){}
-				else
-					{
-						?> <script language="javascript">
-				  		alert("PRODUCTO NO ENCONTRADO");
-				  		</script>
-				  		<?php
-				  		header("refresh:0; url=mospro.php");					
-					}
-		?>	
+
 	&nbsp;		
 	<!-- end #menu -->
 
@@ -196,7 +206,7 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 	<center>
 		<td>
 			<h4 style="text-align:center">
-				<form method="get" action="buscar.php" >
+				<form method="get" action="buscarvender.php" >
 					Buscador de Productos: <input type="text" name="buscar" id="search-text" value="" />
 				</form>
  				</h4>
@@ -227,43 +237,32 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
                             <font size="+1">Opciones</font>
                         </td>
                     </tr> 
-                    <tr>
 					<?
 					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
-					?>
+					?><form name="addcarro" action="vender.php?addcarro=1" method= "POST" onSubmit = 'return validar(this);'>
+                    <tr>
                         <td >
                             <font size="+1"><?php  echo  $row['codigo']?></font>
+							<input type="hidden" name="codigo_pro" value=<?php  echo  $row['codigo']?> />  
                         </td>
                         <td >
                             <font size="+1"><?php  echo  $row['nombre']?></font>
                         </td>
 						<td>
-                            <font size="+1"><?php  echo  $row['precio']?></font> 
+                            <font size="+1"><?php  echo  $row['cantidad']?></font> 
                         </td>
                         <td>
-                            <font size="+1"><?php  echo  $row['cantidad']?></font>
+                            <font size="+1"><?php  echo  $row['precio']?></font>
                         </td>
 
                         <td width="70">
-                        
 						 <center>
-                          <input type="button" value="Ver" onClick="location='producto.php?codigo_pro=<?php echo $row["codigo"];?>'">
-						  <input name="eliminar" type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
-						    if(strRazon!=null && strRazon!='')
-						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar este producto?')) location='mospro.php?borrar=<?php echo $row["codigo"];?>&why='+strRazon
-						               }
-						               else
-						                    {
-						                    if(strRazon==''){
-						                    alert('Debe ingresar una razon');}
-						                    }
-						  ">
-						  
+						 <input type="text" name="cantidad" size="5" MAXLENGTH=10/>
+                          <input type="submit" value="Agregar">
+
                          </center>
 						</td>
-                    </tr>
+                    </tr></form>
 				<?	
                   endwhile;  
 				?>
@@ -271,9 +270,8 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 
             </div>
     </center>        
-&nbsp
 
-	</div>
+	</div>	&nbsp;
 	<!-- end #page -->
 </div>
 

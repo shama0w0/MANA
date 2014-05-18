@@ -36,12 +36,6 @@ if(!isset($_SESSION["nombre"]))
 			</form>
 			<?php
 			}
-		?>	
-		<form action="carro.php" method="post" style="text-align:right">
-			<input type=image src="images/carro3.png" width="50" height="50" >
-		</form>
-
-		<?
 		}
 	if (isset($_GET['ac']))
 	{
@@ -117,14 +111,15 @@ if(!empty($_GET['accion']))
 		$con_ag = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 		$consulta_ag = "INSERT INTO clientes (nombre, rut, direccion, descuento, num) VALUES (' ',' ',' ',".$j.",".$i.")";
 		$result_ag = pg_query($consulta_ag) or die("Error query".pg_last_error() );
+		header("Location: clentes.php?");
 		}
 	}
 if(isset($_GET['borrar'])) 
 	{
-		
 		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
 		$consulta = "DELETE FROM clientes WHERE num='" . $_GET['borrar']. "'";
 		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+		header("Location: clentes.php");
 	}
 	
 	
@@ -193,10 +188,12 @@ if(isset($_SESSION['nombre']))
 			</center>
 			<div id="logo">
 				<h1><a href="index.php"><?php  echo  $row_t['n_corto']?></a></h1>
-			</div>
+			</div>		
 		</div>
-	</div>
-	</div>
+	</div>				
+		<form action="carro.php" method="post" style="text-align:center">
+			<input type=image src="images/carro3.png" width="50" height="50" >
+		</form>
 	<!-- end #header -->
 	<div id="menu-wrapper">
 		<ul id="menu">
@@ -230,12 +227,12 @@ if(isset($_SESSION['nombre']))
 	&nbsp;
 	<!-- end #menu -->
 	<div id="page">
-
-	<hr style="color: #FFFFFF;" />
-
 		<form action="clientes.php?accion=add" method="post" style="text-align:center">
 			<input type=image src="images/agregarb.png" width="50" height="50" >
 		</form> 
+	<hr style="color: #FFFFFF;" />
+
+
 <center>			
 <div class="CSSTableGenerator" >
 			<?php  
@@ -269,7 +266,7 @@ if(isset($_SESSION['nombre']))
                             <font size="+1"><?php  echo  $row['rut']?></font>
                         </td>
                         <td>
-                            <font size="+1"><?php  echo  $row['descuento']?></font>
+                           <center> <font size="+1"><?php  echo  $row['descuento']."%"?></font></center>
                         </td>
 						<td width="70">
 						 <center>
