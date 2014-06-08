@@ -126,11 +126,12 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 
 <?php 
 
+//INSERTAR PRODCUTO
 if(!empty($_POST['nuevo'])) 
 	{
 #	$cadena = "host='localhost' dbname='b17769837_dsi' user='b17769837_shama' password='bdddoce' "; 
 #$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-if($_POST['nombre_pro']==NULL||$_POST['cantidad_pro']==NULL||$_POST['precio_pro']==NULL||$_POST['codigo_pro']==NULL)
+if($_POST['nombre_pro']==NULL||$_POST['cantidad_pro']==NULL||$_POST['precio_pro']==NULL||$_POST['codigo_pro']==NULL||$_POST['stock_bajo']==NULL||$_POST['stock_alto']==NULL)
 	{
 	?> <script language="javascript">
 	alert("DEBE INGRESAR TODOS LOS DATOS OBLIGATORIOS");
@@ -139,7 +140,7 @@ if($_POST['nombre_pro']==NULL||$_POST['cantidad_pro']==NULL||$_POST['precio_pro'
 	}
 	else	
 		{
-		if(is_numeric($_POST['cantidad_pro'])&&is_numeric($_POST['precio_pro'])) 
+		if(is_numeric($_POST['cantidad_pro'])&&is_numeric($_POST['precio_pro'])&&is_numeric($_POST['stock_bajo'])&&is_numeric($_POST['stock_alto'])) 
 			{
 			
 			$consulta3 = "SELECT * FROM productos WHERE codigo='" . $_POST['codigo_pro']. "'";	
@@ -154,19 +155,29 @@ if($_POST['nombre_pro']==NULL||$_POST['cantidad_pro']==NULL||$_POST['precio_pro'
 				}
 				else 
 					{
-					$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-					$consulta = "INSERT INTO productos (nombre, cantidad, precio, codigo, descripcion) VALUES ('" . $_POST['nombre_pro'] . "','" . $_POST['cantidad_pro'] . "','" . $_POST['precio_pro'] . "','" . $_POST['codigo_pro'] . "','" . $_POST['descripcion_pro'] . "')";
-					$result = pg_query($consulta) or die("Error query".pg_last_error() );
-					?> <script language="javascript">
-					alert("PRODUCTO INGRESADO"); 
-					</script>
-					<?php
+					if($_POST['stock_bajo']<$_POST['stock_alto'])
+						{
+						$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+						$consulta = "INSERT INTO productos (nombre, cantidad, precio, codigo, descripcion, stock_min, stock_adecuado) VALUES ('" . $_POST['nombre_pro'] . "','" . $_POST['cantidad_pro'] . "','" . $_POST['precio_pro'] . "','" . $_POST['codigo_pro'] . "','" . $_POST['descripcion_pro'] . "','" . $_POST['stock_bajo'] . "','" . $_POST['stock_alto'] . "')";
+						$result = pg_query($consulta) or die("Error query".pg_last_error() );
+						?> <script language="javascript">
+						alert("PRODUCTO INGRESADO"); 
+						</script>
+						<?php
+						}
+						else
+							{
+							?> <script language="javascript">
+							alert("EL ORDEN DE STOCK ES EL SIGUIENTE: BAJO<ALTO"); 
+							</script>
+							<?php
+							}
 					}
 			}
 			else
 				{
 				?> <script language="javascript">
-				alert("CANTIDAD Y PRECIO DEBEN SER NUMEROS"); 
+				alert("CANTIDAD, PRECIO Y LOS STOCKS DEBEN SER NUMEROS ENTEROS"); 
 				</script>
 				<?php
 				}
@@ -226,7 +237,7 @@ if(isset($_SESSION['nombre']))
 	<!-- end #menu -->
 	<div id="page">
 	<form name = 'usuarios'  method = 'POST' action='inspro.php' onSubmit = 'return validar(this);'>
-			
+			<center>"Todos los campos son obligatorios a excepción de descripción" <center><br>
 			<TABLE border="1" > 
 				<tr>
 					<center>
@@ -239,6 +250,9 @@ if(isset($_SESSION['nombre']))
 						<font size="+1">Cantidad:  </font><input type='text' name='cantidad_pro' MAXLENGTH=10 /></td>
 						<font size="+1">Precio:   </font><input type='text' name='precio_pro' MAXLENGTH=10 /></td>		
 						<font size="+1">Codigo:   </font><input type='text' name='codigo_pro' MAXLENGTH=15 /></td>
+						<br>
+						<font size="+1">Stock bajo:  </font><input type='text' name='stock_bajo' MAXLENGTH=10 /></td>	
+						<font size="+1">Stock alto:   </font><input type='text' name='stock_alto' MAXLENGTH=10 /></td>
 					</center>
 					<br/>
 				</tr>
@@ -256,7 +270,7 @@ if(isset($_SESSION['nombre']))
 			</center>
 	</form>
 
-	</div>
+	</div>	&nbsp;
 	<!-- end #page -->
 </div>
 

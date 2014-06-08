@@ -232,6 +232,9 @@ if(isset($_SESSION['nombre']))
 						<td width="70">
                             <font size="+1">Precio</font>
                         </td>
+						<td width="30">
+                            <font size="+1">Nivel Stock</font>
+                        </td>
                         <td width="150">
                             <font size="+1">Opciones</font>
                         </td>
@@ -252,6 +255,16 @@ if(isset($_SESSION['nombre']))
                         </td>
                         <td>
                             <font size="+1"><?php  echo  $row['precio']?></font>
+                        </td>
+                        <td>
+                           <?php 
+								if($row['cantidad']<=$row['stock_min'])
+									{?><input type=image src="images/rojo.png" width="50" height="50" ><?}
+								if($row['stock_min']<$row['cantidad']&&$row['cantidad']<$row['stock_adecuado'])
+									{?><input type=image src="images/amarillo.png" width="50" height="50" ><?}
+								if($row['cantidad']>=$row['stock_adecuado'])
+									{?><input type=image src="images/verde.png" width="50" height="50" ><?} 
+						   ?>
                         </td>
                         <td width="70">
 						 <center>

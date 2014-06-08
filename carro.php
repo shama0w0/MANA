@@ -158,8 +158,17 @@ if(!empty($_GET['quitart']))
 //COMPRAR
 if(!empty($_GET['comprar']))
 	{
-$usr=pg_escape_string($_SESSION["nombre"]);
-$compra = fopen("compras/".$usr.".txt", "r");
+	if($_GET['nom']==null||$_GET['nom']==" "||$_GET['r']==null||$_GET['r']==" ")
+		{
+		?> 
+		<script language="javascript">
+		alert("LOS DATOS DEL CLIENTEN DEBEN SER SELECCIONADOS O INGRESADOS"); 
+		</script>
+		<?php
+		}
+		else{
+			$usr=pg_escape_string($_SESSION["nombre"]);
+			$compra = fopen("compras/".$usr.".txt", "r");
 			while (!feof($compra)) 
 				{
 				$bufer = fgets($compra, 4096); 
@@ -174,15 +183,18 @@ $compra = fopen("compras/".$usr.".txt", "r");
 					if($nueva_cantidad<0){$nueva_cantidad=0;}
 					$consulta2 = "UPDATE productos SET cantidad='" . pg_escape_string ($nueva_cantidad) . "' WHERE codigo='" . $test[0] . "'";	
 					$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
- 	
 					}
 				}
-			?> <script language="javascript">
-			alert("COMPRA REALIZADA");
-			</script>
-			<?php						
-			fopen("compras/".$usr.".txt",'w+');
-			Header("refresh:3; url=carro.php");
+				?> <script language="javascript">
+				alert("COMPRA REALIZADA");
+				</script>
+				<?php	
+				$fecha_hora=date("d-m-Y H:i:s");
+				$consulta2 = "INSERT INTO facturas (cliente, rut, nombre_vendedor, precio, cantidad, productos, fecha) VALUES ('" . $_GET['nom'] . "','" . $_GET['r'] . "','" . $_SESSION["nombre"] . "','" . $_GET["pt"] . "','" . $_GET["ct"] . "',' ','" . $fecha_hora . "')";
+				$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );			
+				fopen("compras/".$usr.".txt",'w+');		
+				}
+		Header("refresh:3; url=vender.php");
 	}
 
 
@@ -245,16 +257,17 @@ if(isset($_SESSION['nombre']))
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 			$consulta = "SELECT * FROM clientes ORDER BY nombre";	
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );
-	
+			
 			?>
                 <table >
+				<form id="login" action="carro.php" method= "post" style="margin:0px;">
 				<label for="clientes">CLIENTE PARA LA VENTA</label> <br/>
 				<select id="clientes" name="cliente">
 					<option value="" selected="selected">SELECCIONE UN CLIENTE</option>
 					<?
-					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
+					while ($row_cliente = pg_fetch_array($result, null, PGSQL_ASSOC)):
 					?>
-					<option value="<?php  echo  $row['nombre']?>"><?php  echo  $row['nombre']?></option>					
+					<option value="<?php  echo  $row_cliente['nombre']?>"><?php  echo  $row_cliente['nombre']?></option>					
 					<?
 					endwhile;
 					?>
@@ -262,6 +275,7 @@ if(isset($_SESSION['nombre']))
 				</select> 
 				&nbsp;&nbsp;&nbsp;
 				<INPUT TYPE="submit" NAME="OK" VALUE="Mostrar">
+				</form>
 				<br/> <br/>
 				<?
 				if(isset($_POST['cliente'])){
@@ -273,23 +287,28 @@ if(isset($_SESSION['nombre']))
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 						<?	
 						echo "Rut: ";
-						?><input type='text' size="20" name='nombre_cliente' MAXLENGTH=11 /><br><?
+						?><input type='text' size="20" name='rut_cliente' MAXLENGTH=11 /><br><?
 						echo "Direccion: ";
-						?><input type='text' size="50" name='nombre_cliente' MAXLENGTH=200 />
+						?><input type='text' size="50" name='direccion_cliente' MAXLENGTH=200 />
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?
 						echo "Descuento: ";
-						?><input type='text' size="5" name='nombre_cliente' MAXLENGTH=2 /><br><?
+						?><input type='text' size="5" name='descuento_cliente' MAXLENGTH=2 /><br><?
 						}else
 							{
 							$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
 							$consulta = "SELECT * FROM clientes WHERE nombre='" . $_POST['cliente']. "'";	
 							$result = pg_query($consulta) or die("Error query".pg_last_error() );
-							$row = pg_fetch_array($result, null, PGSQL_ASSOC);
-							echo "Nombre: ".$row['nombre']."<br>";
-							echo "Rut: ".$row['rut']."<br>";
-							echo "Direccion: ".$row['direccion']."<br>";
-							echo "Descuento: ".$row['descuento']."<br>";
+							$row_cliente = pg_fetch_array($result, null, PGSQL_ASSOC);
+							echo "Nombre: ".$row_cliente['nombre']."<br>";
+							?><input type="hidden" name="nombre_cliente" value=<?php  echo  $row_cliente['nombre']?> /><?
+							echo "Rut: ".$row_cliente['rut']."<br>";
+							?><input type="hidden" name="rut_cliente" value=<?php  echo  $row_cliente['rut']?> /><?
+							echo "Direccion: ".$row_cliente['direccion']."<br>";
+							?><input type="hidden" name="direccion_cliente" value=<?php  echo  $row_cliente['direccion']?> /><?
+							echo "Descuento: ".$row_cliente['descuento']."<br>";
+							?><input type="hidden" name="descuento_cliente" value=<?php  echo  $row_cliente['descuento']?> /><?
 							}
+							
 				}
 				?>
 				
@@ -347,7 +366,6 @@ $totalprecio=0;
 						 <center>
 						 <input type="button" value="Quitar" onClick="location.href='carro.php?quitar=<?php echo $row['codigo'];?>'">
                          </center>
-
 						</td>
 
                     </tr>
@@ -361,12 +379,14 @@ $totalprecio=0;
 						<td >
                         </td>
                         <td>
-						<font size="+1">	Total: <? echo $totalcantidad?></font>
+							<font size="+1">	Total: <? echo $totalcantidad?></font>
+							<input type="hidden" name="cantidad_t" value=<?php  echo  number_format($totalcantidad)?> />
                         <td> 
-                            	<font size="+1">	Total: $<? echo number_format($totalprecio)?></font>
+                            <font size="+1">	Total: $<? echo number_format($totalprecio)?></font>
+							<input type="hidden" name="precio_t" value=<?php  echo  number_format($totalprecio)?> />
                         </td>
 						<td >
-        	<input type="button" style="width:100px; height:30px; font-size:12pt" value="COMPRAR" onClick="location.href='carro.php?comprar=1&ct=<? echo $totalcantidad?>&pt=<? echo number_format($totalprecio)?>'">
+        	<input type="button" style="width:100px; height:30px; font-size:12pt" value="COMPRAR" onClick="location.href='carro.php?comprar=1&ct=<? echo number_format($totalcantidad)?>&pt=<? echo $totalprecio?>&nom=<? echo $row_cliente['nombre']?>&r=<? echo $row_cliente['rut']?>'">
 
 						</td>
 

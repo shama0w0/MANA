@@ -125,7 +125,33 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 </head>
 <?php 
 if(isset($_SESSION['nombre']))
-			{ ?>
+			{ 
+//QUITAR
+if(isset($_GET['borrar'])) 
+	{
+		
+		$consulta3 = "SELECT * FROM facturas WHERE codigo='" . $_GET['borrar']. "'";	
+		$result3 = pg_query($consulta3) or die("Error query".pg_last_error() );
+		$row3 = pg_fetch_array($result3, null, PGSQL_ASSOC);	
+		
+		$fecha_hora=date("d-m-Y H:i:s");
+		
+		$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );
+		$consulta = "DELETE FROM facturas WHERE codigo='" . $_GET['borrar']. "'";
+		$result = pg_query($consulta) or die("Error query".pg_last_error() );
+		if ($result)
+			{
+			$consulta2 = "INSERT INTO logs (origen, nombre_user, razon, nombre_pro, codigo_pro, fecha) VALUES ('borrar_factura','" . $_SESSION["nombre"] . "','" . $_GET['why'] . "','" . $row3['cliente'] . "','" . $row3['codigo'] . "','" . $fecha_hora . "')";
+			$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
+			?> <script language="javascript">
+			alert("FACTURA ELIMINADA"); 
+			</script>
+			<?php
+			header("refresh:0; url=factu.php");
+			}
+	}
+			
+?>
 <body>
 <div id="wrapper"> 
 	<div id="header-wrapper">
@@ -182,54 +208,190 @@ if(isset($_SESSION['nombre']))
 				<tr>
 					<td>
 						<h4 style="text-align:center">
-							<form method="get" action="buscar.php" >
+							<form method="get" action="buscarfactura.php" >
 								Buscador: <input type="text" name="n" id="search-text" value="" />
 							</form>
  						</h4>
 					</td>
 					<td>
-						<form action="topdf.php" method="post" style="text-align:center">
+						<form action="facturatopdf.php" method="post" style="text-align:center">
 							<input type=image src="images/pdf.png" width="50" height="50" >
 						</form>
 					</td>
 				</tr>
 			</TABLE>
+<h4 style="text-align:center">
+				<form method="post" action="buscarfactura2.php" >
+	&nbsp;&nbsp;
+			Fecha de Inicio:
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				
+			Fecha de Termino:
+						<br>
+						Día: 
+						<select name=dia1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes1>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select>
+						Año: 
+						<select name=anio1>
+						<?echo "<option value='-'></option>";
+							for($i=2013; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+						y
+						&nbsp;&nbsp;
+						&nbsp;&nbsp;
+									
+						Día: 
+						<select name=dia2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=31; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select> 
+						Mes: 
+						<select name=mes2>
+						<?echo "<option value='-'></option>";
+							for($i=1; $i<=12; $i++) 
+							{
+							if($i==1||$i==2||$i==3||$i==4||$i==5||$i==6||$i==7||$i==8||$i==9)
+								{
+								echo "<option value=0$i>0$i</option>";
+								}
+								else
+									{
+									echo "<option value=$i>$i</option>";
+									}
+							}
+						?>
+						</select>
+						Año: 
+						<select name=anio2>
+						<?echo "<option value='-'></option>";
+							for($i=2013; $i<=2099; $i++) {
+								echo "<option value=$i>$i</option>";
+								}
+						?>
+						</select>			
+						
+						</td>
+				</br>			
+				<input type="submit" style="width:160px; height:30px; font-size:12pt" name="buscarfac" value="Buscar por Fecha">			
+			</form>
+ 	</h4>
+			<hr style="color: #FFFFFF;" />
 			</br>
-<center>
+<center>			
 <div class="CSSTableGenerator" >
-                <table >
+			<?php  
+			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
+			$consulta = "SELECT * FROM facturas";	
+			$result = pg_query($consulta) or die("Error query".pg_last_error() );	
+			?>
+                <table style="text-align:center;">
                     <tr>
-                        <td width="100">
-                            <font size="+1">Fecha Emisión</font>
-                        </td>
-                        <td width="150">
-                            <font size="+1">Codigo Factura</font>
-                        </td>
-						<td width="300">
+                        <td width="200">
                             <font size="+1">Cliente</font>
                         </td>
-                        <td width="150">
+                        <td width="70">
+                            <font size="+1">Rut</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Vendedor</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Precio de Venta</font>
+                        </td>
+                        <td width="70">
+                            <font size="+1">Cantidad de Productos</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Codigo</font>
+                        </td>
+                        <td width="100">
+                            <font size="+1">Hora y Fecha</font>
+                        </td>
+						<td width="100">
                             <font size="+1">Opciones</font>
                         </td>
                     </tr> 
                     <tr>
+					<?
+					while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)):
+					?>
                         <td >
-                            <font size="+1">Row 1</font>
+                            <font size="+1" ><?php  echo  $row['cliente']?></font>
                         </td>
                         <td >
-                            <font size="+1">Row 1</font>
+                            <font size="+1"><?php  echo  $row['rut']?></font>
                         </td>
-						<td >
-                            <font size="+1">Row 1</font>
+                        <td>
+                            <font size="+1"><?php  echo  $row['nombre_vendedor']?></font>
                         </td>
-                        <td width="70">
+                        <td >
+                            <font size="+1"><?php  echo  $row['precio']?></font>
+                        </td>
+                        <td >
+                            <font size="+1"><?php  echo  $row['cantidad']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['codigo']?></font>
+                        </td>
+                        <td>
+                            <font size="+1"><?php  echo  $row['fecha']?></font>
+                        </td>
+						<td width="70">
 						 <center>
-						 <input type="button" value="Ver" onClick="location=''">
-						  <input type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
+						  <input name="eliminar" type="button" value="Eliminar" 
+						    onClick="var strRazon=prompt('Hola ¿cuál es la razón de la eliminación?','');
 						    if(strRazon!=null && strRazon!='')
 						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar esta factura?')) location='mospro.php'
+						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar esta factura?')) location='factu.php?borrar=<?php echo $row["codigo"];?>&why='+strRazon
 						               }
 						               else
 						                    {
@@ -240,156 +402,15 @@ if(isset($_SESSION['nombre']))
                          </center>
 						</td>
                     </tr>
-                     <tr>
-                        <td >
-
-                        </td>
-                                                <td >
-
-                        </td>
-                        <td >
-
-                        </td>
-                        <td width="70">
-						 <center>
-						 <input type="button" value="Ver" onClick="location=''">
-						  <input type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
-						    if(strRazon!=null && strRazon!='')
-						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar esta factura?')) location='mospro.php'
-						               }
-						               else
-						                    {
-						                    if(strRazon==''){
-						                    alert('Debe ingresar una razon');}
-						                    }
-						  ">
-                         </center>
-						</td>
-                    </tr>
-                    <tr>
-                        <td >
-
-                        </td>
-                                                <td >
-
-                        </td>
-                        <td >
-
-                        </td>
-                        <td width="70">
-						 <center>
-						 <input type="button" value="Ver" onClick="location=''">
-						  <input type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
-						    if(strRazon!=null && strRazon!='')
-						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar esta factura?')) location='mospro.php'
-						               }
-						               else
-						                    {
-						                    if(strRazon==''){
-						                    alert('Debe ingresar una razon');}
-						                    }
-						  ">
-                         </center>
-						</td>
-                    </tr>
-                    <tr>
-                        <td >
-
-                        </td>
-                                                <td >
-
-                        </td>
-                        <td >
-
-                        </td>
-                        <td width="70">
-						 <center>
-						 <input type="button" value="Ver" onClick="location=''">
-						  <input type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
-						    if(strRazon!=null && strRazon!='')
-						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar esta factura?')) location='mospro.php'
-						               }
-						               else
-						                    {
-						                    if(strRazon==''){
-						                    alert('Debe ingresar una razon');}
-						                    }
-						  ">
-                         </center>
-						</td>
-                    </tr>
-                    <tr>
-                        <td >
- 
-                        </td>
-                                                <td >
-
-                        </td>
-                        <td >
-
-                        </td>
-                        <td width="70">
-						 <center>
-						 <input type="button" value="Ver" onClick="location=''">
-						  <input type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
-						    if(strRazon!=null && strRazon!='')
-						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar esta factura?')) location='mospro.php'
-						               }
-						               else
-						                    {
-						                    if(strRazon==''){
-						                    alert('Debe ingresar una razon');}
-						                    }
-						  ">
-                         </center>
-						</td>
-                    </tr>
-                    <tr>
-                        <td >
-
-                        </td>
-                                                <td >
-
-                        </td>
-                        <td >
-
-                        </td>
-                        <td width="70">
-						 <center>
-						 <input type="button" value="Ver" onClick="location=''">
-						  <input type="button" value="Eliminar" 
-						    onClick="var strRazon=prompt('Hola ¿cuál es la razón del cambio de la eliminación?','');
-						    if(strRazon!=null && strRazon!='')
-						               {
-						               if(confirm('CONFIRMACIÓN: ¿En verdad desea eliminar este cargo?')) location='mospro.php'
-						               }
-						               else
-						                    {
-						                    if(strRazon==''){
-						                    alert('Debe ingresar una razon');}
-						                    }
-						  ">
-                         </center>
-						</td>
-                    </tr>
-					
+				<?	
+                  endwhile;  
+				?>
                 </table>
-            </div>
- </center>           
-&nbsp
-<div align="center">
-<a href="javascript:history.go(-1)" style="text-decoration:none"><font size="+1" color="FFFFFF" >Atrás</font> </a><------><a href="moscar.php?pag=" style="text-decoration:none" ><font size="+1" color="FFFFFF">Siguiente</font></a>
-</div>
 
-	</div>
+            </div>
+    </center>                 
+
+	</div>&nbsp;
 	<!-- end #page -->
 </div>
 

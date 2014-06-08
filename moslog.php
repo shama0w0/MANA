@@ -332,7 +332,7 @@ if(isset($_GET['borrar']))
 <div class="CSSTableGenerator" >
 			<?php  
 			$con = pg_connect($cadena) or die( "Error al conectar".pg_last_error() );	
-			$consulta = "SELECT * FROM logs ORDER BY fecha desc";	
+			$consulta = "SELECT * FROM logs";	
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );	
 			?>
                 <table >
@@ -347,10 +347,10 @@ if(isset($_GET['borrar']))
                             <font size="+1">Razón</font>
                         </td>
                         <td width="300">
-                            <font size="+1">Nombre_P</font>
+                            <font size="+1">Nombre</font>
                         </td>
                         <td width="150">
-                            <font size="+1">Codigo_P</font>
+                            <font size="+1">Codigo</font>
                         </td>
                         <td width="200">
                             <font size="+1">Hora y Fecha</font>

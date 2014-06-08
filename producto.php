@@ -128,7 +128,8 @@ $row_t = pg_fetch_array($result_t, null, PGSQL_ASSOC)
 
 <?
 
-if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['cantidad_pro'])&&isset($_POST['precio_pro'])&&isset($_POST['cambio'])) 
+//MODIFICACION
+if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['cantidad_pro'])&&isset($_POST['precio_pro'])&&isset($_POST['cambio'])&&isset($_POST['stock_b'])&&isset($_POST['stock_a'])) 
 	{
 	if($_POST['cambio']==null||$_POST['cambio']==" "||$_POST['nombre_pro']==null||$_POST['nombre_pro']==" ")
 			{
@@ -139,37 +140,37 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 				<?php
 			}else
 				{
-			if(is_numeric($_POST['cantidad_pro'])&&is_numeric($_POST['precio_pro'])) 
+			if(is_numeric($_POST['cantidad_pro'])&&is_numeric($_POST['precio_pro'])&&is_numeric($_POST['stock_b'])&&is_numeric($_POST['stock_a'])) 
 					{
 			
 					if($_POST['descripcion_pro']==null||$_POST['descripcion_pro']==" ")
 						{
-						$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
+						$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "', stock_min='" . pg_escape_string ($_POST['stock_b']) . "', stock_adecuado='" . pg_escape_string ($_POST['stock_a']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
 						$result = pg_query($consulta) or die("Error query".pg_last_error() );
 						?> <script language="javascript">
 						alert("PRODUCTO MODIFICADO"); 
 						</script>
-						<?php					
+						<?php						
 						}
 						else
 							{
-							$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "', descripcion='" . pg_escape_string ($_POST['descripcion_pro']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
+							$consulta = "UPDATE productos SET nombre='" . pg_escape_string ($_POST['nombre_pro']) . "', cantidad='" . pg_escape_string ($_POST['cantidad_pro']) . "', precio='" . pg_escape_string ($_POST['precio_pro']) . "', stock_min='" . pg_escape_string ($_POST['stock_b']) . "', stock_adecuado='" . pg_escape_string ($_POST['stock_a']) . "', descripcion='" . pg_escape_string ($_POST['descripcion_pro']) . "' WHERE codigo='" . $_POST['codigo_pro'] . "'";	
 							$result = pg_query($consulta) or die("Error query".pg_last_error() );
 							?> <script language="javascript">
 							alert("PRODUCTO MODIFICADO"); 
 							</script>
 							<?php	
 							}
-							$fecha_hora=date("d-m-Y H:i:s");
-							$consulta2 = "INSERT INTO logs (origen, nombre_user, razon, nombre_pro, codigo_pro, fecha) VALUES ('modificar_producto','" . $_SESSION["nombre"] . "','" . $_POST['cambio'] . "','" . $_POST['nombre_pro'] . "','" . $_POST['codigo_pro'] . "','" . $fecha_hora . "')";
-							$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
+					$fecha_hora=date("d-m-Y H:i:s");
+					$consulta2 = "INSERT INTO logs (origen, nombre_user, razon, nombre_pro, codigo_pro, fecha) VALUES ('modificar_producto','" . $_SESSION["nombre"] . "','" . $_POST['cambio'] . "','" . $_POST['nombre_pro'] . "','" . $_POST['codigo_pro'] . "','" . $fecha_hora . "')";
+					$result2 = pg_query($consulta2) or die("Error query".pg_last_error() );
 					
 					}
 					else
 						{
 						?> 
 							<script language="javascript">
-							alert("CANTIDAD Y PRECIO DEBEN SER NUMEROS"); 
+							alert("CANTIDAD, PRECIO Y AMBOS STOCKS DEBEN SER NUMEROS"); 
 							</script>
 						<?php
 						}
@@ -238,6 +239,7 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 			$result = pg_query($consulta) or die("Error query".pg_last_error() );
 			$row = pg_fetch_array($result, null, PGSQL_ASSOC);	
 		?>			
+	&nbsp;
 	<!-- end #menu -->
 	<div id="page">
 	 <center>Los campos marcados con un * son obligatorios. Ademas, si desea hacer un cambio en el producto debe especificar la razon del cambio.</center>
@@ -252,6 +254,10 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 				<td><font size="+1">Codigo: <?php  echo  $row['codigo']?></td></font><br />
 				<input type="hidden" name="codigo_pro" value=<?php  echo  $row['codigo']?> />
+				<td><font size="+1">*Stock bajo:</font><input type='text' name='stock_b' MAXLENGTH=10 value='<?php  echo  $row['stock_min']?>'/></td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+				<td><font size="+1">*Stock alto:</font><input type='text' name='stock_a' MAXLENGTH=10 value='<?php  echo  $row['stock_adecuado']?>'/></td>
+				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 			</tr>
 			<br />
 			<tr>
@@ -266,7 +272,7 @@ if(isset($_POST['nombre_pro'])&&isset($_POST['codigo_pro'])&&isset($_POST['canti
 			</center>
 	</form>
 
-	</div>
+	</div>	&nbsp;
 	<!-- end #page -->
 </div>
 
